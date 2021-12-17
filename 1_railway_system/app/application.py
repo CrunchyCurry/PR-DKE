@@ -1,5 +1,4 @@
 from functools import wraps
-
 import flask_bcrypt
 from flask import Flask, render_template, url_for, flash, redirect, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
@@ -104,8 +103,8 @@ def home():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for("home"))
+    #if current_user.is_authenticated:
+    #    return redirect(url_for("home"))
     form = forms.RegisterForm()
     if form.validate_on_submit():
         hashed_password = flask_bcrypt.generate_password_hash(form.password.data).decode("utf-8")

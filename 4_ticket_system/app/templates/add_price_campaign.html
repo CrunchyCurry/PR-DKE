@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TIS</title>
+</head>
+<a style="font-family:verdana" href= {{ url_for('home')}}>Zurück</a>
+
+<body>
+<h3 style="font-family:verdana">Aktion hinzufügen</h3>
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    {{ form.action_id }}
+    {{ form.action_name }}
+    {{ form.action_start }}
+    {{ form.action_end }}
+    {{ form.action_discount }}
+    {{ form.submit }}
+</form>
+</body>
+</html>

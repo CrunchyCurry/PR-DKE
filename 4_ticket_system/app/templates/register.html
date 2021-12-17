@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TIS-Registrierung</title>
+</head>
+<body>
+<h1 style="font-family:verdana">Registrierung</h1>
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    {{ form.username }}
+    {{ form.password }}
+    {{ form.repeat_password }}
+    {{ form.submit }}
+</form>
+<br>
+<a style="font-family:verdana" href= "login">Sie haben schon einen Account? Loggen Sie sich hier ein!</a>
+
+</body>
+</html>

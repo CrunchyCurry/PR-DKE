@@ -1,4 +1,12 @@
 {% extends "layout.html" %}
 {% block content %}
-    <h1>Home</h1>
+    <h1>Strecken</h1>
+    {% for railway in railways %}
+        <article class="media content-section">
+            <div class="media-body">
+                <h2><a class="article-title" href="#">{{ railway.name }}</a></h2>
+                <p class="article-content">{{ railway.start_station.name }} - {{ railway.end_station.name }}</p>
+            </div>
+        </article>
+    {% endfor %}
 {% endblock content %}

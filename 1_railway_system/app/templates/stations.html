@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Bahnhöfe</h1>
+    {% for station in stations %}
+        <article class="media content-section">
+            <div class="media-body">
+                <h2><a class="article-title" href="{{ url_for('station', station_id=station.id) }}">{{ station.name }}</a></h2>
+                <p class="article-content">{{ station.state }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

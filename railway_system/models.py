@@ -57,9 +57,10 @@ class Station(db.Model):
     def __repr__(self):
         return f"Railway('{self.name}', '{self.state}')"
 
-# class Section(db.Model):
-#     id = db.Column()
-#     length = db.Column(db.Numeric())
-#     user_fee = db.Column(db.Numeric())
-#     max_speed = db.Column(db.Integer)
-#     gauge = db.Column(db.Integer)
+
+class Section(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    length = db.Column(db.Numeric())
+    user_fee = db.Column(db.Numeric())
+    max_speed = db.Column(db.Integer)
+    gauge = db.Column(db.Integer)

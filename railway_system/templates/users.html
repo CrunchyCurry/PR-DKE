@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Benutzer</h1>
+    {% for user in users %}
+        <article class="media content-section">
+            <div class="media-body">
+                <h2><a class="article-title" href="{{ url_for('user', station_id=station.id) }}">{{ station.name }}</a></h2>
+                <p class="article-content">{{ user.state }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }} <!--CSRF (Cross Site Request Forgery) Token, protection against attacks-->
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <!-- start station -->
+            <div class="form-group mb-4">
+                {{ form.starts_at.label(class="form-control-label") }}
+                {% if form.starts_at.errors %}  <!-- print all errors if there any -->
+                    {{ form.starts_at(class="form-control form-control-lg is is-invalid") }}
+                    <div class=invalid-feedback">
+                        {% for error in form.starts_at.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.starts_at(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- end station -->
+            <div class="form-group mb-4">
+                {{ form.ends_at.label(class="form-control-label") }}
+                {% if form.ends_at.errors %}
+                    {{ form.ends_at(class="form-control form-control-lg is is-invalid")}}
+                    <div class=invalid-feedback">
+                    {% for error in form.ends_at.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.ends_at(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- length -->
+            <div class="form-group mb-4">
+                {{ form.length.label(class="form-control-label") }}
+                {% if form.length.errors %}
+                    {{ form.length(class="form-control form-control-lg is is-invalid")}}
+                    <div class=invalid-feedback">
+                    {% for error in form.length.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.length(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- user fee -->
+            <div class="form-group mb-4">
+                {{ form.user_fee.label(class="form-control-label") }}
+                {% if form.user_fee.errors %}  <!-- print all errors if there any -->
+                    {{ form.user_fee(class="form-control form-control-lg is is-invalid") }}
+                    <div class=invalid-feedback">
+                        {% for error in form.user_fee.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.user_fee(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- max speed -->
+            <div class="form-group mb-4">
+                {{ form.max_speed.label(class="form-control-label") }}
+                {% if form.max_speed.errors %}
+                    {{ form.max_speed(class="form-control form-control-lg is is-invalid")}}
+                    <div class=invalid-feedback">
+                    {% for error in form.max_speed.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.max_speed(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+            <!-- gauge -->
+            <div class="form-group mb-4">
+            {% for subfield in form.gauge %}
+                <tr>
+                    <td>{{ subfield }}</td>
+                    <td>{{ subfield.label }}</td>
+                </tr>
+            {% endfor %}
+            </div>
+        </fieldset>
+        <div class="mt-8 form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+{% endblock content %}

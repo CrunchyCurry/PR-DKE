@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Abschnitte</h1>
+    {% for section in sections %}
+        <article class="media content-section">
+            <div class="media-body">
+                <h2><a class="article-title" href="{{ url_for('section', section_id=section.id) }}">{{ section.id }}</a></h2>
+                <p class="article-content">{{ section.start_station.name }} - {{ section.end_station.name }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

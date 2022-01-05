@@ -1,8 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, jsonify, session
 from functools import wraps
 from . import app, db, bcrypt
-from .forms import RegisterForm, LoginForm, StationForm
-from .models import User, Railway, Station, stations_schema, station_schema
+from .forms import RegisterForm, LoginForm, StationForm, SectionForm
+from .models import User, Railway, Station, stations_schema, station_schema, Section
 from flask_login import login_user, current_user, logout_user, login_required
 
 
@@ -63,6 +63,13 @@ def stations():
     return render_template("stations.html", title="Bahnhöfe", stations=stations)
 
 
+@app.route("/sections")
+@login_required
+def sections():
+    sections = Section.query.all()
+    return render_template("sections.html", title="Abschnitte", sections=sections)
+
+
 @app.route("/station/new", methods=["GET", "POST"])
 @login_required
 # @login_required
@@ -78,11 +85,43 @@ def new_station():
                            form=form, legend="Neuen Bahnhof erstellen")
 
 
+@app.route("/section/new", methods=["GET", "POST"])
+@login_required
+# @login_required
+def new_section():
+    form = SectionForm()
+    form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    if form.validate_on_submit():
+        section = Section(
+            starts_at=form.starts_at.data,
+            ends_at=form.ends_at.data,
+            length=form.length.data,
+            user_fee=form.user_fee.data,
+            max_speed=form.max_speed.data,
+            gauge=form.gauge.data
+            # railway
+        )
+        db.session.add(section)
+        db.session.commit()
+        flash("Abschnitt wurde erstellt!", "success")
+        return redirect(url_for("stations"))
+    return render_template("create_section.html", title="Neuen Abschnitt erstellen",
+                           form=form, legend="Neuen Abschnitt erstellen")
+
+
 @app.route("/station/<int:station_id>")
 @login_required
 def station(station_id):
     station = Station.query.get_or_404(station_id)
     return render_template("station.html", title=station.name, station=station)
+
+
+@app.route("/section/<int:section_id>")
+@login_required
+def section(section_id):
+    section = Section.query.get_or_404(section_id)
+    return render_template("section.html", title=section.name, section=section)
 
 
 @app.route("/station/<int:station_id>/update", methods=["GET", "POST"])

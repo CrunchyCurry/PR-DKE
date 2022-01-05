@@ -133,6 +133,13 @@ def api_station(id):
     return station_schema.jsonify(station)
 
 
+@app.route("/users")
+@login_required
+def users():
+    users = User.query.all()
+    return render_template("users.html", title="Benutzer", users=users)
+
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

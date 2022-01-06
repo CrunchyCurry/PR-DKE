@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }} <!--CSRF (Cross Site Request Forgery) Token, protection against attacks-->
+        <!-- PART II -->
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <!-- select railway -->
+            <div class="form-group mb-4">
+                {{ form.name.label(class="form-control-label") }}
+                {% if form.name.errors %}  <!-- print all errors if there any -->
+                    {{ form.name(class="form-control form-control-lg is is-invalid") }}
+                    <div class=invalid-feedback">
+                        {% for error in form.name.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.name(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        <div class="mt-8 form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+        </fieldset>
+        <!-- PART II -->
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <!-- select railway -->
+            <div class="form-group mb-4">
+                {{ form.name.label(class="form-control-label") }}
+                {% if form.name.errors %}  <!-- print all errors if there any -->
+                    {{ form.name(class="form-control form-control-lg is is-invalid") }}
+                    <div class=invalid-feedback">
+                        {% for error in form.name.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.name(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        <div class="mt-8 form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+        </fieldset>
+    </form>
+</div>
+{% endblock content %}

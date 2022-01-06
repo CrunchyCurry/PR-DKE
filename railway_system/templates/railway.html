@@ -17,7 +17,7 @@
         <p class="article-content">Abschnitte: <i class="bi bi-distribute-horizontal"></i> {{ railway.sections.count() }}</p>
         {% for section in railway.sections %}
             {% if loop.first %}
-                <a href="{{ url_for('station', station_id=railway.start_station.id) }}" style="font-size:20px" class="article-content"><b>{{ section.start_station.name }}</b></a>
+                <p class="article-content"><a href="{{ url_for('station', station_id=railway.start_station.id) }}" style="font-size:20px" class="article-content"><b>{{ section.start_station.name }}</b></a></p>
             {% else %}
                 <p class="article-content">{{ section.start_station.name }}</p>
             {% endif %}
@@ -26,7 +26,7 @@
             {% else %}
                 {% set displayed_gauge = "[SS]" %}
             {% endif %}
-            <p class="article-content"><i class="bi bi-distribute-horizontal"></i> Section: {{ section.id }} {{ displayed_gauge }} {{ section.max_speed }} km/h</p>
+            <p class="article-content"><i class="bi bi-distribute-horizontal"></i><a href="{{ url_for('section', section_id=section.id) }}"> Abschnitt: {{ section.id }} {{ displayed_gauge }} {{ section.max_speed }} km/h</a></p>
             {% if loop.last %}
                 <p style="font-size:20px" class="article-content"><b>{{ section.end_station.name }}</b></p>
             {% endif %}

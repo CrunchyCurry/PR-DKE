@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, DecimalField, IntegerField, RadioField, \
-    SelectField
+    SelectField, SelectMultipleField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NoneOf
 from .models import User
 
@@ -46,3 +46,29 @@ class SectionForm(FlaskForm):
     def validate_ends_at(self, field):
         if field.data == self.starts_at.data:
             raise ValidationError("End-Bahnhof kann nicht gleichzeitig auch Start-Bahnhof sein.")
+
+
+class RailwayForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
+    starts_at = SelectField("Start", coerce=int, validators=[DataRequired()])
+    ends_at = SelectField("Ende", coerce=int, validators=[DataRequired()])
+    #sections = SelectMultipleField("Zugeordnete Abschnitte (Optional)", coerce=int)  #TODO: check if selected sections already belong to another railway
+    submit = SubmitField("Bestätigen")
+
+    def validate_ends_at(self, field):
+        if field.data == self.starts_at.data:
+            raise ValidationError("End-Bahnhof kann nicht gleichzeitig auch Start-Bahnhof sein.")
+
+    #def validate_sections(self, field):
+    #    if len(field.data) > 1 and 0 in field.data:
+
+
+class SectionAssignment1(FlaskForm):
+    railway_id = SelectField("Strecke", coerce=int)
+    submit = SubmitField("Wählen")
+
+
+class SectionAssignment2(FlaskForm):
+    railway_id = SelectField("Strecke", coerce=int)
+    sections = SelectMultipleField("Abschnitt hinzufügen", coerce=int)  #TODO: check if selected sections already belong to another railway
+    submit = SubmitField("Bestätigen")

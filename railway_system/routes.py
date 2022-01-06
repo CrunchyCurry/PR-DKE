@@ -1,7 +1,7 @@
 from flask import render_template, url_for, flash, redirect, request, jsonify, session
 from functools import wraps
 from . import app, db, bcrypt
-from .forms import RegisterForm, LoginForm, StationForm, SectionForm
+from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm
 from .models import User, Railway, Station, stations_schema, station_schema, Section
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -106,9 +106,32 @@ def new_section():
         db.session.add(section)
         db.session.commit()
         flash("Abschnitt wurde erstellt!", "success")
-        return redirect(url_for("stations"))
+        return redirect(url_for("sections"))
     return render_template("create_section.html", title="Neuen Abschnitt erstellen",
                            form=form, legend="Neuen Abschnitt erstellen")
+
+
+@app.route("/railway/new", methods=["GET", "POST"])
+@login_required
+# @login_required
+def new_railway():
+    form = RailwayForm()
+    form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    #form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name})") for s in Section.query.all()]
+    if form.validate_on_submit():
+        railway = Railway(
+            name=form.name.data,
+            starts_at=form.starts_at.data,
+            ends_at=form.ends_at.data,
+            #sections=form.sections.data,
+        )
+        db.session.add(railway)
+        db.session.commit()
+        flash("Strecke wurde erstellt!", "success")
+        return redirect(url_for("home"))
+    return render_template("create_railway.html", title="Neue Strecke erstellen",
+                           form=form, legend="Neue Strecke erstellen")
 
 
 @app.route("/station/<int:station_id>")

@@ -92,6 +92,7 @@ def new_section():
     form = SectionForm()
     form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    form.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
     if form.validate_on_submit():
         section = Section(
             starts_at=form.starts_at.data,
@@ -99,8 +100,8 @@ def new_section():
             length=form.length.data,
             user_fee=form.user_fee.data,
             max_speed=form.max_speed.data,
-            gauge=form.gauge.data
-            # railway
+            gauge=form.gauge.data,
+            railway_id=form.railway_id.data if form.railway_id.data is not 0 else None
         )
         db.session.add(section)
         db.session.commit()
@@ -121,7 +122,14 @@ def station(station_id):
 @login_required
 def section(section_id):
     section = Section.query.get_or_404(section_id)
-    return render_template("section.html", title=section.name, section=section)
+    return render_template("section.html", title=f"{section.starts_at} - {section.ends_at}", section=section)
+
+
+@app.route("/railway/<int:railway_id>")
+@login_required
+def railway(railway_id):
+    railway = Railway.query.get_or_404(railway_id)
+    return render_template("railway.html", title=f"{railway.starts_at} - {railway.ends_at}", railway=railway)
 
 
 @app.route("/station/<int:station_id>/update", methods=["GET", "POST"])

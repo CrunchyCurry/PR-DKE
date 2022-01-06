@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block content %}
+<article class="media content-section">
+    <div class="media-body">
+        <div class="article-metadata">
+            <div>
+                <a class="btn btn-secondary btn-sm mt-1 mb-1"
+                   href="#">Bearbeiten</a>
+                <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">
+                    Löschen
+                </button>
+            </div>
+
+        </div>
+        <h2 class="article-title">{{ section.id }}</h2>
+        <p class="article-content">Start: {{ section.start_station.name }}</p>
+        <p class="article-content">Ende: {{ section.end_station.name }}</p>
+        <p class="article-content">Länge: {{ section.length }}</p>
+        <p class="article-content">Nutzungsentgelt: {{ section.user_fee }}</p>
+        <p class="article-content">Maximale Geschwindigkeit: {{ section.max_speed }}</p>
+        <p class="article-content">Spurweite: {{ section.gauge }}</p>
+        {% if section.railway_id is not none %}
+            <p class="article-content">Zugeteilt: {{ section.railway_id }}</p>
+        {% else %}
+            <p class="article-content">Zugeteilt: Keiner Bahn zugeteilt.</p>
+        {% endif %}
+    </div>
+</article>
+<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Bahnhof löschen?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+                <form action="#" method="POST">
+                    <input class="btn btn-danger" type="submit" value="Löschen">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

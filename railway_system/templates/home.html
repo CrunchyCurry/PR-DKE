@@ -4,7 +4,7 @@
     {% for railway in railways %}
         <article class="media content-section">
             <div class="media-body">
-                <h2><a class="article-title" href="#">{{ railway.name }}</a></h2>
+                <h2><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}">{{ railway.name }}</a></h2>
                 <p class="article-content">{{ railway.start_station.name }} - {{ railway.end_station.name }}</p>
             </div>
         </article>

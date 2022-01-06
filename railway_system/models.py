@@ -38,7 +38,6 @@ class Railway(db.Model):
     starts_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
     ends_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
     sections = db.relationship("Section", backref='on_railway', lazy='dynamic')
-
     def __repr__(self):
         return f"Railway('{self.name}', '{self.starts_at}', '{self.ends_at}')"
 

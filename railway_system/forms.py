@@ -40,7 +40,7 @@ class SectionForm(FlaskForm):
     user_fee = DecimalField("Nutzungsentgelt", validators=[DataRequired()])
     max_speed = IntegerField("Maximale Geschwindigkeit", validators=[DataRequired()])
     gauge = RadioField("Spurweite", choices=GAUGE_CHOICES, default='1435', validators=[DataRequired()])
-    # railway_id =
+    railway_id = SelectField("Strecken-Zuordnung (Optional)", coerce=int)
     submit = SubmitField("Bestätigen")
 
     def validate_ends_at(self, field):

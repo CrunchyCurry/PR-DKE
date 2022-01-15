@@ -1,7 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, jsonify, session
 from functools import wraps
 from . import app, db, bcrypt
-from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm
+from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm, SectionAssignment1, \
+    SectionAssignment2
 from .models import User, Railway, Station, stations_schema, station_schema, Section
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -70,6 +71,32 @@ def sections():
     return render_template("sections.html", title="Abschnitte", sections=sections)
 
 
+@login_required
+@app.route("/section-assignment", methods=["GET", "POST"])
+def section_assignment_1():
+    form_1 = SectionAssignment1()
+    form_1.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
+    if form_1.validate_on_submit():
+        return redirect(url_for("section_assignment_2", railway_id=form_1.railway_id.data))  # redirect to part 2 with chosen railway as param
+    return render_template("section_assignment_1.html", title="Abschnitte zu Strecke zuordnen", form=form_1, legend="Abschnitt zu Strecke zurordnen")
+
+
+@login_required
+@app.route("/section-assignment/<int:railway_id>", methods=["GET", "POST"])
+def section_assignment_2(railway_id):
+    railway_name = Railway.query.filter_by(id=railway_id).first().name
+    form_2 = SectionAssignment2()
+    form_2.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name}") for s in Section.query.filter_by(railway_id=None).all()]
+    if form_2.validate_on_submit():
+        print(form_2.sections.data)
+        section = Section.query.filter_by(id=form_2.sections.data).first()
+        section.railway_id = railway_id
+        db.session.commit()
+        flash(f"Abschnitt {section.id} wurde zu Strecke {railway_name} zugeordnet!", "success")
+        return redirect(url_for("section_assignment_2", railway_id=railway_id))
+    return render_template("section_assignment_2.html", title="Abschnitte zu Strecke zuordnen", form=form_2, railway_name=railway_name)
+
+
 @app.route("/station/new", methods=["GET", "POST"])
 @login_required
 # @login_required
@@ -92,7 +119,7 @@ def new_section():
     form = SectionForm()
     form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    form.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
+    #form.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
     if form.validate_on_submit():
         section = Section(
             starts_at=form.starts_at.data,
@@ -101,7 +128,7 @@ def new_section():
             user_fee=form.user_fee.data,
             max_speed=form.max_speed.data,
             gauge=form.gauge.data,
-            railway_id=form.railway_id.data if form.railway_id.data is not 0 else None
+            #railway_id=form.railway_id.data if form.railway_id.data is not 0 else None
         )
         db.session.add(section)
         db.session.commit()

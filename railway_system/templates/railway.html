@@ -17,7 +17,7 @@
         <p class="article-content">Abschnitte: <i class="bi bi-distribute-horizontal"></i> {{ railway.sections.count() }}</p>
         {% for section in railway.sections %}
             {% if loop.first %}
-                <p class="article-content"><a href="{{ url_for('station', station_id=railway.start_station.id) }}" style="font-size:20px" class="article-content"><b>{{ section.start_station.name }}</b></a></p>
+                <p style="font-size:20px" class="article-content"><b>{{ section.start_station.name }}</b></p>
             {% else %}
                 <p class="article-content">{{ section.start_station.name }}</p>
             {% endif %}

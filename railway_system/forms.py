@@ -24,10 +24,20 @@ class LoginForm(FlaskForm):
     remember = BooleanField("Angemeldet bleiben")
     submit = SubmitField("Einloggen")
 
-
+STATE_CHOICES = [
+    ("Oberösterreich", "Oberösterreich"),
+    ("Niederösterreich", "Niederösterreich"),
+    ("Wien", "Wien"),
+    ("Salzburg", "Salzburg"),
+    ("Kärnten", "Kärnten"),
+    ("Burgenland", "Burgenland"),
+    ("Tirol", "Tirol"),
+    ("Vorarlberg", "Vorarlberg"),
+    ("Steiermark", "Steiermark"),
+]
 class StationForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    state = StringField("Bundesland", validators=[DataRequired()])
+    state = SelectField("Bundesland", choices=STATE_CHOICES, coerce=str, validators=[DataRequired()])
     submit = SubmitField("Bestätigen")
 
 
@@ -40,7 +50,7 @@ class SectionForm(FlaskForm):
     user_fee = DecimalField("Nutzungsentgelt", validators=[DataRequired()])
     max_speed = IntegerField("Maximale Geschwindigkeit", validators=[DataRequired()])
     gauge = RadioField("Spurweite", choices=GAUGE_CHOICES, default='1435', validators=[DataRequired()])
-    railway_id = SelectField("Strecken-Zuordnung (Optional)", coerce=int)
+    #railway_id = SelectField("Strecken-Zuordnung (Optional)", coerce=int)
     submit = SubmitField("Bestätigen")
 
     def validate_ends_at(self, field):
@@ -64,11 +74,10 @@ class RailwayForm(FlaskForm):
 
 
 class SectionAssignment1(FlaskForm):
-    railway_id = SelectField("Strecke", coerce=int)
+    railway_id = SelectField("Zu bearbeitende Strecke", coerce=int, validators=[DataRequired()])
     submit = SubmitField("Wählen")
 
 
 class SectionAssignment2(FlaskForm):
-    railway_id = SelectField("Strecke", coerce=int)
-    sections = SelectMultipleField("Abschnitt hinzufügen", coerce=int)  #TODO: check if selected sections already belong to another railway
-    submit = SubmitField("Bestätigen")
+    sections = SelectField("Abschnitt", coerce=int)  #TODO: check if selected sections already belong to another railway
+    submit = SubmitField("Zuordnen")

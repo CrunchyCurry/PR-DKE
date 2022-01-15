@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+    <h2 class="article-title">{{ railway_name }}</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }} <!--CSRF (Cross Site Request Forgery) Token, protection against attacks-->
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">{{ legend }}</legend>
+            <!-- select section -->
+            <div class="form-group mb-4">
+                {{ form.sections.label(class="form-control-label") }}
+                {% if form.sections.errors %}  <!-- print all errors if there any -->
+                    {{ form.sections(class="form-control form-control-lg is is-invalid") }}
+                    <div class=invalid-feedback">
+                        {% for error in form.sections.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.sections(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        <div class="mt-8 form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+        </fieldset>
+    </form>
+</div>
+{% endblock content %}

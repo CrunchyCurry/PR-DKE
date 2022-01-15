@@ -20,9 +20,9 @@
         <p class="article-content">Maximale Geschwindigkeit: {{ section.max_speed }}</p>
         <p class="article-content">Spurweite: {{ section.gauge }}</p>
         {% if section.railway_id is not none %}
-            <p class="article-content">Zugeteilt: {{ section.railway_id }}</p>
+            <p class="article-content">Zugeteilt: {{ section.on_railway.name }}</p>
         {% else %}
-            <p class="article-content">Zugeteilt: Keiner Bahn zugeteilt.</p>
+            <p class="article-content">Zugeteilt: Keiner Strecke zugeteilt.</p>
         {% endif %}
     </div>
 </article>

@@ -3,7 +3,8 @@ from functools import wraps
 from . import app, db, bcrypt
 from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm, SectionAssignment1, \
     SectionAssignment2, WarningForm
-from .models import User, Railway, Station, stations_schema, station_schema, Section, Warning
+from .models import User, Railway, Station, stations_schema, station_schema, Section, Warning, railway_schema, \
+    section_schema, warning_schema, railways_schema, sections_schema, warnings_schema
 from flask_login import login_user, current_user, logout_user, login_required
 
 
@@ -247,6 +248,52 @@ def api_stations():
 def api_station(id):
     station = Station.query.get(id)
     return station_schema.jsonify(station)
+
+
+# API railways
+@app.route("/get-railways", methods=["GET"])
+def api_railways():
+    all_railways = Railway.query.all()
+    result = railways_schema.dump(all_railways)
+    return jsonify(result)
+
+
+# API railway
+@app.route("/get-railway/<int:id>", methods=["GET"])
+def api_railway(id):
+    railway = Railway.query.get(id)
+    return railway_schema.dump(railway)
+
+
+# API sections
+@app.route("/get-sections", methods=["GET"])
+def api_sections():
+    all_sections = Section.query.all()
+    result = sections_schema.dump(all_sections)
+    return jsonify(result)
+
+
+# API section
+@app.route("/get-section/<int:id>", methods=["GET"])
+def api_section(id):
+    section = Section.query.get(id)
+    return section_schema.dump(section)
+
+
+# API warnings
+@app.route("/get-warnings", methods=["GET"])
+def api_warnings():
+    all_warnings = Warning.query.all()
+    result = warnings_schema.dump(all_warnings)
+    return jsonify(result)
+
+
+# API warning
+@app.route("/get-warning/<int:id>", methods=["GET"])
+def api_warning(id):
+    warning = Warning.query.get(id)
+    return warning_schema.dump(warning)
+
 
 
 @app.route("/users")

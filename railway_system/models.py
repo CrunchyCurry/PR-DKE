@@ -1,18 +1,8 @@
 from flask_login import UserMixin
+from marshmallow import fields
 from sqlalchemy.orm import backref
 
 from . import db, login_manager, ma
-
-
-# Station schema
-class StationSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'name', 'state')
-
-
-# Init schema
-station_schema = StationSchema()  # use strict = True to avoid console warning
-stations_schema = StationSchema(many=True)  # for multiple returns values
 
 
 @login_manager.user_loader
@@ -29,18 +19,6 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"User('{self.username}','{self.type}')"
-
-
-# TODO: Add starts_at != ends_at constraint<
-class Railway(db.Model):
-    __tablename__ = "railway"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), unique=True)
-    starts_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
-    ends_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
-    sections = db.relationship("Section", backref='on_railway', lazy='dynamic')
-    def __repr__(self):
-        return f"Railway('{self.name}', '{self.starts_at}', '{self.ends_at}')"
 
 
 class Station(db.Model):
@@ -63,6 +41,19 @@ class Station(db.Model):
         return f"Railway('{self.name}', '{self.state}')"
 
 
+# TODO: Add starts_at != ends_at constraint<
+class Railway(db.Model):
+    __tablename__ = "railway"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), unique=True)
+    starts_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
+    ends_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
+    sections = db.relationship("Section", backref='on_railway', lazy='dynamic')
+
+    def __repr__(self):
+        return f"Railway('{self.name}', '{self.starts_at}', '{self.ends_at}')"
+
+
 class Section(db.Model):
     __tablename__ = "section"
     id = db.Column(db.Integer, primary_key=True)
@@ -75,7 +66,7 @@ class Section(db.Model):
     railway_id = db.Column(db.Integer, db.ForeignKey("railway.id"))
     warnings = db.relationship("Warning", secondary="section_warning")
 
-    #warnings = db.relationship("Warning", backref='on_section', lazy='dynamic')
+    # warnings = db.relationship("Warning", backref='on_section', lazy='dynamic')
 
 
 class Warning(db.Model):
@@ -84,7 +75,7 @@ class Warning(db.Model):
     title = db.Column(db.String(30), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     sections = db.relationship("Section", secondary="section_warning")
-    #section_id = db.Column(db.Integer, db.ForeignKey("section.id"), nullable=False)
+    # section_id = db.Column(db.Integer, db.ForeignKey("section.id"), nullable=False)
 
 
 class SectionWarning(db.Model):
@@ -95,3 +86,128 @@ class SectionWarning(db.Model):
 
     section = db.relationship("Section", backref=backref("section_warning", cascade="all, delete-orphan"))
     warning = db.relationship("Warning", backref=backref("section_warning", cascade="all, delete-orphan"))
+
+
+# MA Schemas
+
+# Station schema
+class StationSchema(ma.Schema):
+    class Meta:
+        ordered = True
+        fields = (
+            'id',
+            'name',
+            'state'
+        )
+
+
+class WarningSchema(ma.Schema):
+    class Meta:
+        ordered = True
+        fields = (
+            'id',
+            'title',
+            'description',
+        )
+
+    # id = ma.auto_field()
+    # title = ma.auto_field()
+    # description = ma.auto_field()
+
+
+class SectionSchema(ma.Schema):
+    class Meta:
+        ordered = True
+        fields = (
+            'id',
+            'start_station',
+            'end_station',
+            'length',
+            'user_fee',
+            'max_speed',
+            'gauge',
+            'railway_id',
+            'warnings'
+        )
+
+    start_station = ma.Nested(StationSchema)
+    end_station = ma.Nested(StationSchema)
+    warnings = ma.Nested(WarningSchema, many=True)
+
+# class SectionSchema(ma.SQLAlchemySchema):
+#     class Meta:
+#         model = Section
+#         load_instance = True
+#         ordered = True
+#
+#     id = ma.auto_field()
+#     starts_at = ma.auto_field()
+#     ends_at = ma.auto_field()
+#     length = ma.auto_field()
+#     user_fee = ma.auto_field()
+#     max_speed = ma.auto_field()
+#     gauge = ma.auto_field()
+#     railway_id = ma.auto_field()
+#     warnings = ma.auto_field()
+#
+#
+# class RailwaySchema(ma.SQLAlchemySchema):
+#     class Meta:
+#         model = Railway
+#         load_instance = True
+#         ordered = True
+#         # fields = (
+#         #     'id',
+#         #     'name',
+#         #     'starts_at',
+#         #     'ends_at',
+#         #     'sections'
+#         # )
+#
+#     id = ma.auto_field()
+#     name = ma.auto_field()
+#     starts_at = ma.auto_field()
+#     ends_at = ma.auto_field()
+#     sections = ma.auto_field()
+
+
+class RailwaySchema(ma.Schema):
+    class Meta:
+        model = Railway
+        ordered = True
+        fields = (
+            'id',
+            'name',
+            'start_station',
+            'end_station',
+            'sections'
+        )
+
+    start_station = ma.Nested(StationSchema)
+    end_station = ma.Nested(StationSchema)
+    sections = ma.Nested(SectionSchema, many=True)
+
+
+class SectionWarningSchema(ma.Schema):
+    class Meta:
+        fields = (
+            'id',
+            'section_id',
+            'warning_id'
+        )
+
+
+# Init schema
+station_schema = StationSchema()  # use strict = True to avoid console warning
+stations_schema = StationSchema(many=True)  # for multiple returns values
+
+railway_schema = RailwaySchema()
+railways_schema = RailwaySchema(many=True)
+
+section_schema = SectionSchema()
+sections_schema = SectionSchema(many=True)
+
+warning_schema = WarningSchema()
+warnings_schema = WarningSchema(many=True)
+
+

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, DecimalField, IntegerField, RadioField, \
-    SelectField, SelectMultipleField
+    SelectField, SelectMultipleField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NoneOf
 from .models import User
 
@@ -81,3 +81,10 @@ class SectionAssignment1(FlaskForm):
 class SectionAssignment2(FlaskForm):
     sections = SelectField("Abschnitt", coerce=int)  #TODO: check if selected sections already belong to another railway
     submit = SubmitField("Zuordnen")
+
+
+class WarningForm(FlaskForm):
+    sections = SelectMultipleField("Betroffene Abschnitte", coerce=int, validators=[DataRequired()])
+    title = StringField("Titel", validators=[DataRequired(), Length(min=2, max=30)])
+    description = TextAreaField("Beschreibung", validators=[DataRequired(), Length(min=2, max=255)])
+    submit = SubmitField("Bestätigen")

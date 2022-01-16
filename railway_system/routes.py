@@ -2,8 +2,8 @@ from flask import render_template, url_for, flash, redirect, request, jsonify, s
 from functools import wraps
 from . import app, db, bcrypt
 from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm, SectionAssignment1, \
-    SectionAssignment2
-from .models import User, Railway, Station, stations_schema, station_schema, Section
+    SectionAssignment2, WarningForm
+from .models import User, Railway, Station, stations_schema, station_schema, Section, Warning
 from flask_login import login_user, current_user, logout_user, login_required
 
 
@@ -158,6 +158,25 @@ def new_railway():
         flash("Strecke wurde erstellt!", "success")
         return redirect(url_for("home"))
     return render_template("create_railway.html", title="Neue Strecke erstellen",
+                           form=form, legend="Neue Strecke erstellen")
+
+
+@app.route("/warning/new", methods=["GET", "POST"])
+@login_required
+def new_warning():
+    form = WarningForm()
+    form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name})") for s in Section.query.all()]
+    if form.validate_on_submit():
+        for section in form.sections:
+            warning = Warning(
+                title=form.title.data,
+                #description
+            )
+            db.session.add(warning)
+            db.session.commit()
+        flash("Strecke wurde erstellt!", "success")
+        return redirect(url_for("home"))
+    return render_template("create_warning.html", title="Neue Strecke erstellen",
                            form=form, legend="Neue Strecke erstellen")
 
 

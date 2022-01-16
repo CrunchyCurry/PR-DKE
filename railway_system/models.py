@@ -1,4 +1,5 @@
 from flask_login import UserMixin
+from sqlalchemy.orm import backref
 
 from . import db, login_manager, ma
 
@@ -72,12 +73,25 @@ class Section(db.Model):
     max_speed = db.Column(db.Integer, nullable=False)
     gauge = db.Column(db.Integer, nullable=False)
     railway_id = db.Column(db.Integer, db.ForeignKey("railway.id"))
-    warnings = db.relationship("Warning", backref='on_section', lazy='dynamic')
+    warnings = db.relationship("Warning", secondary="section_warning")
+
+    #warnings = db.relationship("Warning", backref='on_section', lazy='dynamic')
 
 
 class Warning(db.Model):
     __tablename__ = "warning"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    section_id = db.Column(db.Integer, db.ForeignKey("section.id"), nullable=False)
+    title = db.Column(db.String(30), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    sections = db.relationship("Section", secondary="section_warning")
+    #section_id = db.Column(db.Integer, db.ForeignKey("section.id"), nullable=False)
 
+
+class SectionWarning(db.Model):
+    __tablename__ = "section_warning"
+    id = db.Column(db.Integer, primary_key=True)
+    section_id = db.Column(db.Integer, db.ForeignKey("section.id"))
+    warning_id = db.Column(db.Integer, db.ForeignKey("warning.id"))
+
+    section = db.relationship("Section", backref=backref("section_warning", cascade="all, delete-orphan"))
+    warning = db.relationship("Warning", backref=backref("section_warning", cascade="all, delete-orphan"))

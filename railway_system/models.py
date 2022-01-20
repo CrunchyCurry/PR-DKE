@@ -95,9 +95,6 @@ class Section(db.Model):
     )
 
 
-    # warnings = db.relationship("Warning", backref='on_section', lazy='dynamic')
-
-
 class Warning(db.Model):
     __tablename__ = "warning"
     id = db.Column(db.Integer, primary_key=True)
@@ -107,6 +104,7 @@ class Warning(db.Model):
     # section_id = db.Column(db.Integer, db.ForeignKey("section.id"), nullable=False)
 
 
+# Association table for sections <-> warnings
 class SectionWarning(db.Model):
     __tablename__ = "section_warning"
     id = db.Column(db.Integer, primary_key=True)
@@ -117,7 +115,7 @@ class SectionWarning(db.Model):
     warning = db.relationship("Warning", backref=backref("section_warning", cascade="all, delete-orphan"))
 
 
-# MA Schemas
+# <------------------- MA Schemas --------------------->
 
 # Station schema
 class StationSchema(ma.Schema):

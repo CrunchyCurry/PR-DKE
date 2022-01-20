@@ -88,7 +88,11 @@ class SectionAssignment2(FlaskForm):
 
 
 class WarningForm(FlaskForm):
-    sections = SelectMultipleField("Betroffene Abschnitte (Mehrfachauswahl möglich)", coerce=int, validators=[DataRequired()])
+    sections = SelectMultipleField(
+        "Betroffene Abschnitte (Mehrfachauswahl möglich)",
+        coerce=int,
+        validators=[DataRequired()]
+    )
     title = StringField("Titel", validators=[DataRequired(), Length(min=2, max=30)])
     description = TextAreaField("Beschreibung", validators=[DataRequired(), Length(min=2, max=255)])
     submit = SubmitField("Bestätigen")

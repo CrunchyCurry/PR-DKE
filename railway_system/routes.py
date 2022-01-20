@@ -4,7 +4,7 @@ from . import app, db, bcrypt
 from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm, SectionAssignment1, \
     SectionAssignment2, WarningForm
 from .models import User, Railway, Station, stations_schema, station_schema, Section, Warning, railway_schema, \
-    section_schema, warning_schema, railways_schema, sections_schema, warnings_schema
+    section_schema, warning_schema, railways_schema, sections_schema, warnings_schema, SectionWarning
 from flask_login import login_user, current_user, logout_user, login_required
 
 
@@ -13,7 +13,7 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.check_admin():
             abort(403)
-            #return redirect(url_for("login"), code=302)
+            # return redirect(url_for("login"), code=302)
         return f(*args, **kwargs)
 
     return decorated_function
@@ -212,8 +212,7 @@ def new_warning():
         db.session.add(warning)
         for section_id in form.sections.data:
             section = Section.query.get(section_id)
-            section.warnings.append(
-                warning)  # do I have to query warning again or is warning obj the same as the inserted one?
+            section.warnings.append(warning)  # do I have to query warning again or is warning obj the same as the inserted one?
         db.session.commit()
         flash("Warnung wurde erstellt!", "success")
         return redirect(url_for("warnings"))
@@ -249,6 +248,8 @@ def warning(warning_id):
     return render_template("warning.html", title=warning.title, warning=warning)
 
 
+# <---------------------------- UPDATE ---------------------------->
+
 @app.route("/station/<int:station_id>/update", methods=["GET", "POST"])
 @login_required
 @admin_required
@@ -269,7 +270,61 @@ def update_station(station_id):
                            form=form, legend="Bahnhof bearbeiten")
 
 
-#  <!-- check whether user is admin {% if current_user == admin %} --> <!-- endif check -->
+@app.route("/warning/<int:warning_id>/update", methods=["GET", "POST"])
+@login_required
+@admin_required
+def update_warning(warning_id):
+    warning = Warning.query.get_or_404(warning_id)
+    form = WarningForm()
+    form.sections.choices = [(s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name}") for s in
+                             Section.query.all()]
+    # fill in previous data
+    if form.validate_on_submit():
+        warning.title = form.title.data
+        warning.description = form.description.data
+        #warning.sections = form.sections TODO ??? for now only updating title and desc work
+        db.session.commit()
+        flash("Warnung wurde bearbeitet!", "success")
+        return redirect(url_for("warning", warning_id=warning.id))
+    elif request.method == "GET":
+        # form.sections.data = warning.sections
+        print(SectionWarning.query.filter_by(warning_id=warning_id).first().warning_id)
+        # no need to check if sections of warnings is empty, because a warning always has one section
+        previous_sections = []
+        for section in SectionWarning.query.filter_by(warning_id=warning_id).all():
+            previous_sections.append(section.id)
+        form.sections.process_data(previous_sections)  # select previous sections as default
+        form.title.data = warning.title
+        form.description.data = warning.description
+    return render_template("create_warning.html", title="Warnung bearbeiten",
+                           form=form, legend="Warnung bearbeiten")
+
+
+@app.route("/section/<int:section_id>/update", methods=["GET", "POST"])
+@login_required
+@admin_required
+def update_section(section_id):
+    section = Section.query.get_or_404(section_id)
+    form = SectionForm()
+    # fill in previous data
+    if form.validate_on_submit():
+        starts_at = form.starts_at.data
+        ends_at = form.ends_at.data
+        length = form.ends_at.data
+        user_fee = form.ends_at.data
+        max_speed = form.ends_at.data
+        gauge = form.ends_at.data
+        db.session.commit()
+        flash("Abschnitt wurde bearbeitet!", "success")
+        return redirect(url_for("section", section_id=section.id))
+    elif request.method == "GET":
+        form.name.data = section.name
+        form.state.data = section.state
+    return render_template("create_section.html", title="Abschnitt bearbeiten",
+                           form=form, legend="Abschnitt bearbeiten")
+
+
+# <---------------------------- DELETE ---------------------------->
 
 @app.route("/station/<int:station_id>/delete", methods=["POST"])
 @login_required
@@ -285,9 +340,9 @@ def delete_station(station_id):
 @app.route("/warning/<int:warning_id>/delete", methods=["POST"])
 @login_required
 @admin_required
-#TODO
+# TODO
 def delete_warning(warning_id):
-    warning = Station.query.get_or_404(warning_id)
+    warning = Warning.query.get_or_404(warning_id)
     db.session.delete(warning)
     db.session.commit()
     flash("Warnung wurde gelöscht!", "success")
@@ -370,5 +425,3 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
-
-

@@ -19,7 +19,8 @@ class User(db.Model, UserMixin):
     is_admin = db.Column(db.Boolean, nullable=False)
 
     #TODO add is admin method
-
+    def check_admin(self):
+        return self.is_admin
 
     def __repr__(self):
         return f"User('{self.username}','{self.is_admin}')"
@@ -63,6 +64,11 @@ class Railway(db.Model):
     def get_end(self):
         if len(self.sections) != 0:
             return Station.query.get(self.sections[-1].ends_at).name
+        return None
+
+    def get_end_id(self):
+        if len(self.sections) != 0:
+            return self.sections[-1].ends_at
         return None
 
     # TODO continue adding constraints

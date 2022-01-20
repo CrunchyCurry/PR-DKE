@@ -8,7 +8,7 @@
                 {% for section in warning.sections %}
                     {{ section.start_station.name }} - {{ section.end_station.name }}{% if not loop.last %}, {% endif %}
                 {% endfor %}
-                <h2><a class="article-title" href="#">{{ warning.title }}</a></h2>
+                <h2><a class="article-title" href="{{ url_for('warning', warning_id=warning.id) }}">{{ warning.title }}</a></h2>
                 <p class="article-content">{{ warning.description }}</p>
             </div>
         </article>

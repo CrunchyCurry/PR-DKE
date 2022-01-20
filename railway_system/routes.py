@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect, request, jsonify, session
+from flask import render_template, url_for, flash, redirect, request, jsonify, session, abort
 from functools import wraps
 from . import app, db, bcrypt
 from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm, SectionAssignment1, \
@@ -6,6 +6,17 @@ from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayFor
 from .models import User, Railway, Station, stations_schema, station_schema, Section, Warning, railway_schema, \
     section_schema, warning_schema, railways_schema, sections_schema, warnings_schema
 from flask_login import login_user, current_user, logout_user, login_required
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.check_admin():
+            abort(403)
+            #return redirect(url_for("login"), code=302)
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 
 @app.route("/")
@@ -16,13 +27,15 @@ def home():
 
 
 @app.route("/register", methods=["GET", "POST"])
+@login_required
+@admin_required
 def register():
     # if current_user.is_authenticated:
     #    return redirect(url_for("home"))
     form = RegisterForm()
     if form.validate_on_submit():
-        #hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
-        user = User(username=form.username.data, password=form.password.data, type=True)
+        # hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
+        user = User(username=form.username.data, password=form.password.data, is_admin=form.is_admin.data)
         db.session.add(user)
         db.session.commit()
         flash(f"Benutzer {form.username.data} angelegt!", "success")  # second param (success) is category
@@ -37,7 +50,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user: #and bcrypt.check_password_hash(user.password, form.password.data):
+        if user:  # and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)  # log user in
             next_page = request.args.get("next")  # get last page that was accessed to redirect user back to it
             return redirect(next_page) if next_page else redirect(url_for("home"))
@@ -80,21 +93,35 @@ def warnings():
 
 
 @login_required
+@admin_required
 @app.route("/section-assignment", methods=["GET", "POST"])
 def section_assignment_1():
     form_1 = SectionAssignment1()
     form_1.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
     if form_1.validate_on_submit():
-        return redirect(url_for("section_assignment_2", railway_id=form_1.railway_id.data))  # redirect to part 2 with chosen railway as param
-    return render_template("section_assignment_1.html", title="Abschnitte zu Strecke zuordnen", form=form_1, legend="Abschnitt zu Strecke zuordnen")
+        return redirect(url_for("section_assignment_2",
+                                railway_id=form_1.railway_id.data))  # redirect to part 2 with chosen railway as param
+    return render_template("section_assignment_1.html", title="Abschnitte zu Strecke zuordnen", form=form_1,
+                           legend="Abschnitt zu Strecke zuordnen")
 
 
 @login_required
+@admin_required
 @app.route("/section-assignment/<int:railway_id>", methods=["GET", "POST"])
 def section_assignment_2(railway_id):
-    railway_name = Railway.query.filter_by(id=railway_id).first().name
+    railway = Railway.query.filter_by(id=railway_id).first()
+    railway_name = railway.name
     form_2 = SectionAssignment2()
-    form_2.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name}") for s in Section.query.filter_by(railway_id=None).all()]
+    if railway.get_end_id() is not None:
+        form_2.sections.choices = [
+            (s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name}") for s in
+            Section.query.filter_by(railway_id=None, starts_at=railway.get_end_id()).all()
+        ]
+    else:
+        form_2.sections.choices = [
+            (s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name}") for s in
+            Section.query.filter_by(railway_id=None).all()
+        ]
     if form_2.validate_on_submit():
         print(form_2.sections.data)
         section = Section.query.filter_by(id=form_2.sections.data).first()
@@ -102,12 +129,13 @@ def section_assignment_2(railway_id):
         db.session.commit()
         flash(f"Abschnitt {section.id} wurde zu Strecke {railway_name} zugeordnet!", "success")
         return redirect(url_for("section_assignment_2", railway_id=railway_id))
-    return render_template("section_assignment_2.html", title="Abschnitte zu Strecke zuordnen", form=form_2, railway_name=railway_name)
+    return render_template("section_assignment_2.html", title="Abschnitte zu Strecke zuordnen", form=form_2,
+                           railway_name=railway_name)
 
 
 @app.route("/station/new", methods=["GET", "POST"])
 @login_required
-# @login_required
+@admin_required
 def new_station():
     form = StationForm()
     if form.validate_on_submit():
@@ -122,12 +150,12 @@ def new_station():
 
 @app.route("/section/new", methods=["GET", "POST"])
 @login_required
-# @login_required
+@admin_required
 def new_section():
     form = SectionForm()
     form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    #form.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
+    # form.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
     if form.validate_on_submit():
         section = Section(
             starts_at=form.starts_at.data,
@@ -136,7 +164,7 @@ def new_section():
             user_fee=form.user_fee.data,
             max_speed=form.max_speed.data,
             gauge=form.gauge.data,
-            #railway_id=form.railway_id.data if form.railway_id.data is not 0 else None
+            # railway_id=form.railway_id.data if form.railway_id.data is not 0 else None
         )
         db.session.add(section)
         db.session.commit()
@@ -148,18 +176,18 @@ def new_section():
 
 @app.route("/railway/new", methods=["GET", "POST"])
 @login_required
-# @login_required
+@admin_required
 def new_railway():
     form = RailwayForm()
-    #form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    #form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    #form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name})") for s in Section.query.all()]
+    # form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    # form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    # form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name})") for s in Section.query.all()]
     if form.validate_on_submit():
         railway = Railway(
             name=form.name.data,
-            #starts_at=form.starts_at.data,
-            #ends_at=form.ends_at.data,
-            #sections=form.sections.data,
+            # starts_at=form.starts_at.data,
+            # ends_at=form.ends_at.data,
+            # sections=form.sections.data,
         )
         db.session.add(railway)
         db.session.commit()
@@ -171,9 +199,11 @@ def new_railway():
 
 @app.route("/warning/new", methods=["GET", "POST"])
 @login_required
+@admin_required
 def new_warning():
     form = WarningForm()
-    form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name}") for s in Section.query.all()]
+    form.sections.choices = [(s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name}") for s in
+                             Section.query.all()]
     if form.validate_on_submit():
         warning = Warning(
             title=form.title.data,
@@ -182,10 +212,11 @@ def new_warning():
         db.session.add(warning)
         for section_id in form.sections.data:
             section = Section.query.get(section_id)
-            section.warnings.append(warning)  # do I have to query warning again or is warning obj the same as the inserted one?
+            section.warnings.append(
+                warning)  # do I have to query warning again or is warning obj the same as the inserted one?
         db.session.commit()
-        flash("Strecke wurde erstellt!", "success")
-        return redirect(url_for("home"))
+        flash("Warnung wurde erstellt!", "success")
+        return redirect(url_for("warnings"))
     return render_template("create_warning.html", title="Neue Warnung erstellen",
                            form=form, legend="Neue Warnung erstellen")
 
@@ -211,9 +242,16 @@ def railway(railway_id):
     return render_template("railway.html", title=f"{railway.get_start()} - {railway.get_end()}", railway=railway)
 
 
+@app.route("/warning/<int:warning_id>")
+@login_required
+def warning(warning_id):
+    warning = Warning.query.get_or_404(warning_id)
+    return render_template("warning.html", title=warning.title, warning=warning)
+
+
 @app.route("/station/<int:station_id>/update", methods=["GET", "POST"])
 @login_required
-# @login_required
+@admin_required
 def update_station(station_id):
     station = Station.query.get_or_404(station_id)
     form = StationForm()
@@ -235,13 +273,25 @@ def update_station(station_id):
 
 @app.route("/station/<int:station_id>/delete", methods=["POST"])
 @login_required
-# @login_required
+@admin_required
 def delete_station(station_id):
     station = Station.query.get_or_404(station_id)
     db.session.delete(station)
     db.session.commit()
     flash("Bahnhof wurde gelöscht!", "success")
     return redirect(url_for("stations"))
+
+
+@app.route("/warning/<int:warning_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+#TODO
+def delete_warning(warning_id):
+    warning = Station.query.get_or_404(warning_id)
+    db.session.delete(warning)
+    db.session.commit()
+    flash("Warnung wurde gelöscht!", "success")
+    return redirect(url_for("warnings"))
 
 
 # API - get all stations
@@ -304,9 +354,9 @@ def api_warning(id):
     return warning_schema.dump(warning)
 
 
-
 @app.route("/users")
 @login_required
+@admin_required
 def users():
     users = User.query.all()
     return render_template("users.html", title="Benutzer", users=users)
@@ -320,3 +370,5 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+

@@ -2,6 +2,7 @@
 {% block content %}
 <article class="media content-section">
     <div class="media-body">
+        {% if current_user.is_authenticated and current_user.check_admin() %}
         <div class="article-metadata">
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1"
@@ -10,9 +11,15 @@
                     Löschen
                 </button>
             </div>
-
         </div>
+        {% endif %}
         <h2 class="article-title">{{ section.id }}</h2>
+        {% if section.warnings|length > 0 %}
+            <p><b>Achtung - für diesen Abschnitt bestehen folgende Warnungen:</b></p>
+            {% for warning in section.warnings %}
+                <p class="content-section" style="color:red;"> [{{ warning.title }}] {{ warning.description }} </p>
+            {% endfor %}
+        {% endif %}
         <p class="article-content">Start: {{ section.start_station.name }}</p>
         <p class="article-content">Ende: {{ section.end_station.name }}</p>
         <p class="article-content">Länge: {{ section.length }}</p>

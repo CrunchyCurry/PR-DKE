@@ -112,14 +112,18 @@ def section_assignment_2(railway_id):
     railway = Railway.query.filter_by(id=railway_id).first()
     railway_name = railway.name
     form_2 = SectionAssignment2()
-    if railway.get_end_id() is not None:
+    if railway.get_end_id() is not None:  # if railway already has sections
         form_2.sections.choices = [
-            (s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name}") for s in
-            Section.query.filter_by(railway_id=None, starts_at=railway.get_end_id()).all()
+            (s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name} ({s.gauge} mm)") for s in
+            Section.query.filter_by(
+                railway_id=None,
+                starts_at=railway.get_end_id(),
+                gauge=railway.get_gauge()
+            ).all()
         ]
-    else:
+    else: # if railway does not have any sections yet
         form_2.sections.choices = [
-            (s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name}") for s in
+            (s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name} ({s.gauge} mm)") for s in
             Section.query.filter_by(railway_id=None).all()
         ]
     if form_2.validate_on_submit():
@@ -171,7 +175,7 @@ def new_section():
         flash("Abschnitt wurde erstellt!", "success")
         return redirect(url_for("sections"))
     return render_template("create_section.html", title="Neuen Abschnitt erstellen",
-                           form=form, legend="Neuen Abschnitt erstellen")
+                           form=form, lock_stations=False, legend="Neuen Abschnitt erstellen")
 
 
 @app.route("/railway/new", methods=["GET", "POST"])
@@ -306,22 +310,33 @@ def update_warning(warning_id):
 def update_section(section_id):
     section = Section.query.get_or_404(section_id)
     form = SectionForm()
+    form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     # fill in previous data
     if form.validate_on_submit():
-        starts_at = form.starts_at.data
-        ends_at = form.ends_at.data
-        length = form.ends_at.data
-        user_fee = form.ends_at.data
-        max_speed = form.ends_at.data
-        gauge = form.ends_at.data
+        section.starts_at = form.starts_at.data
+        section.ends_at = form.ends_at.data
+        section.length = form.length.data
+        section.user_fee = form.user_fee.data
+        section.max_speed = form.max_speed.data
+        section.gauge = form.gauge.data
         db.session.commit()
         flash("Abschnitt wurde bearbeitet!", "success")
         return redirect(url_for("section", section_id=section.id))
     elif request.method == "GET":
-        form.name.data = section.name
-        form.state.data = section.state
+        lock_stations = True if (section.railway_id is not None) else False
+        print(section.railway_id)
+        print(lock_stations)
+        form.starts_at.data = section.starts_at
+        form.ends_at.data = section.ends_at
+        form.length.data = section.length
+        form.user_fee.data = section.user_fee
+        form.max_speed.data = section.max_speed
+        form.gauge.data = section.gauge
+
     return render_template("create_section.html", title="Abschnitt bearbeiten",
-                           form=form, legend="Abschnitt bearbeiten")
+                           form=form, lock_stations=lock_stations, legend="Abschnitt bearbeiten")
+    # lock stations if sections already belongs to a railway
 
 
 # <---------------------------- DELETE ---------------------------->
@@ -340,7 +355,6 @@ def delete_station(station_id):
 @app.route("/warning/<int:warning_id>/delete", methods=["POST"])
 @login_required
 @admin_required
-# TODO
 def delete_warning(warning_id):
     warning = Warning.query.get_or_404(warning_id)
     db.session.delete(warning)
@@ -348,6 +362,20 @@ def delete_warning(warning_id):
     flash("Warnung wurde gelöscht!", "success")
     return redirect(url_for("warnings"))
 
+
+@app.route("/section/<int:section_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_section(section_id):
+    section = Section.query.get_or_404(section_id)
+    db.session.delete(section)
+    db.session.commit()
+    flash("Warnung wurde gelöscht!", "success")
+    return redirect(url_for("sections"))
+
+
+
+# <---------------------------- APIs ---------------------------->
 
 # API - get all stations
 @app.route("/get-stations", methods=["GET"])

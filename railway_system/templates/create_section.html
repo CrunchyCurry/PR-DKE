@@ -5,6 +5,11 @@
         {{ form.hidden_tag() }} <!--CSRF (Cross Site Request Forgery) Token, protection against attacks-->
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">{{ legend }}</legend>
+            {% if lock_stations %}
+                <p class="content-section" style="color:deepskyblue;">
+                    <i class="bi bi-info-circle"></i> Start- und End-Bahnhof können nicht geändert werden, solange Abschnitt noch zu einer Strecke gehört.
+                </p>
+            {% else %}
             <!-- start station -->
             <div class="form-group mb-4">
                 {{ form.starts_at.label(class="form-control-label") }}
@@ -33,6 +38,7 @@
                     {{ form.ends_at(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
+            {% endif %}
             <!-- length -->
             <div class="form-group mb-4">
                 {{ form.length.label(class="form-control-label") }}

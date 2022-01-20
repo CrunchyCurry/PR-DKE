@@ -71,6 +71,11 @@ class Railway(db.Model):
             return self.sections[-1].ends_at
         return None
 
+    def get_gauge(self):
+        if len(self.sections) != 0:
+            return self.sections[0].gauge
+        return None
+
     # TODO continue adding constraints
 
     def __repr__(self):

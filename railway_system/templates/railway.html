@@ -12,9 +12,8 @@
             </div>
         </div>
         <h2 class="article-title">{{ railway.name }}</h2>
-        <p class="article-content">Start: {{ railway.start_station.name }}</p>
-        <p class="article-content">Ende: {{ railway.end_station.name }}</p>
-        <p class="article-content">Abschnitte: <i class="bi bi-distribute-horizontal"></i> {{ railway.sections.count() }}</p>
+        <p class="article-content">Start: {{ railway.get_start() }}</p>
+        <p class="article-content">Ende: {{ railway.get_end() }}</p>
         {% for section in railway.sections %}
             {% if loop.first %}
                 <p style="font-size:20px" class="article-content"><b>{{ section.start_station.name }}</b></p>

@@ -19,34 +19,6 @@
                     {{ form.name(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
-            <!-- start station -->
-            <div class="form-group mb-4">
-                {{ form.starts_at.label(class="form-control-label") }}
-                {% if form.starts_at.errors %}  <!-- print all errors if there any -->
-                    {{ form.starts_at(class="form-control form-control-lg is is-invalid") }}
-                    <div class=invalid-feedback">
-                        {% for error in form.starts_at.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.starts_at(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
-            <!-- end station -->
-            <div class="form-group mb-4">
-                {{ form.ends_at.label(class="form-control-label") }}
-                {% if form.ends_at.errors %}
-                    {{ form.ends_at(class="form-control form-control-lg is is-invalid")}}
-                    <div class=invalid-feedback">
-                    {% for error in form.ends_at.errors %}
-                        <span>{{ error }}</span>
-                    {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.ends_at(class="form-control form-control-lg") }}
-                {% endif %}
-            </div>
         </fieldset>
         <div class="mt-8 form-group">
             {{ form.submit(class="btn btn-outline-info") }}

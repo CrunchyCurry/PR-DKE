@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from marshmallow import fields
+from sqlalchemy import UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import backref
 
 from . import db, login_manager, ma
@@ -15,10 +16,13 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(30), unique=True)
     password = db.Column(db.String(255), nullable=False)
-    type = db.Column(db.Boolean, nullable=False)
+    is_admin = db.Column(db.Boolean, nullable=False)
+
+    #TODO add is admin method
+
 
     def __repr__(self):
-        return f"User('{self.username}','{self.type}')"
+        return f"User('{self.username}','{self.is_admin}')"
 
 
 class Station(db.Model):
@@ -27,11 +31,12 @@ class Station(db.Model):
     name = db.Column(db.String(255), unique=True, nullable=False)
     state = db.Column(db.String(17), nullable=False)
     # for railways
-    start_of_r = db.relationship('Railway', backref='start_station', lazy='dynamic', foreign_keys='Railway.starts_at')
-    end_of_r = db.relationship('Railway', backref='end_station', lazy='dynamic', foreign_keys='Railway.ends_at')
+    #start_of_r = db.relationship('Railway', backref='start_station', lazy='dynamic', foreign_keys='Railway.starts_at')
+    #end_of_r = db.relationship('Railway', backref='end_station', lazy='dynamic', foreign_keys='Railway.ends_at')
     # for sections
     start_of_s = db.relationship('Section', backref='start_station', lazy='dynamic', foreign_keys='Section.starts_at')
     end_of_s = db.relationship('Section', backref='end_station', lazy='dynamic', foreign_keys='Section.ends_at')
+
 
     def __init__(self, name, state):
         self.name = name
@@ -46,9 +51,21 @@ class Railway(db.Model):
     __tablename__ = "railway"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
-    starts_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
-    ends_at = db.Column(db.Integer, db.ForeignKey("station.id"), nullable=False)
-    sections = db.relationship("Section", backref='on_railway', lazy='dynamic')
+    #starts_at = #db.Column(db.Integer, db.ForeignKey("station.id"))#, nullable=False)
+    #ends_at = #db.Column(db.Integer, db.ForeignKey("station.id"))#, nullable=False)
+    sections = db.relationship("Section", backref='on_railway', lazy='select')
+
+    def get_start(self):
+        if len(self.sections) != 0:
+            return Station.query.get(self.sections[0].starts_at).name
+        return None
+
+    def get_end(self):
+        if len(self.sections) != 0:
+            return Station.query.get(self.sections[-1].ends_at).name
+        return None
+
+    # TODO continue adding constraints
 
     def __repr__(self):
         return f"Railway('{self.name}', '{self.starts_at}', '{self.ends_at}')"
@@ -65,6 +82,12 @@ class Section(db.Model):
     gauge = db.Column(db.Integer, nullable=False)
     railway_id = db.Column(db.Integer, db.ForeignKey("railway.id"))
     warnings = db.relationship("Warning", secondary="section_warning")
+
+    __table_args__ = (
+        db.UniqueConstraint(starts_at, ends_at, name="uq_starts_at_ends_at"),
+        db.CheckConstraint(starts_at != ends_at, name="ck_starts_at_ends_at"),
+    )
+
 
     # warnings = db.relationship("Warning", backref='on_section', lazy='dynamic')
 
@@ -110,10 +133,6 @@ class WarningSchema(ma.Schema):
             'description',
         )
 
-    # id = ma.auto_field()
-    # title = ma.auto_field()
-    # description = ma.auto_field()
-
 
 class SectionSchema(ma.Schema):
     class Meta:
@@ -133,42 +152,6 @@ class SectionSchema(ma.Schema):
     start_station = ma.Nested(StationSchema)
     end_station = ma.Nested(StationSchema)
     warnings = ma.Nested(WarningSchema, many=True)
-
-# class SectionSchema(ma.SQLAlchemySchema):
-#     class Meta:
-#         model = Section
-#         load_instance = True
-#         ordered = True
-#
-#     id = ma.auto_field()
-#     starts_at = ma.auto_field()
-#     ends_at = ma.auto_field()
-#     length = ma.auto_field()
-#     user_fee = ma.auto_field()
-#     max_speed = ma.auto_field()
-#     gauge = ma.auto_field()
-#     railway_id = ma.auto_field()
-#     warnings = ma.auto_field()
-#
-#
-# class RailwaySchema(ma.SQLAlchemySchema):
-#     class Meta:
-#         model = Railway
-#         load_instance = True
-#         ordered = True
-#         # fields = (
-#         #     'id',
-#         #     'name',
-#         #     'starts_at',
-#         #     'ends_at',
-#         #     'sections'
-#         # )
-#
-#     id = ma.auto_field()
-#     name = ma.auto_field()
-#     starts_at = ma.auto_field()
-#     ends_at = ma.auto_field()
-#     sections = ma.auto_field()
 
 
 class RailwaySchema(ma.Schema):
@@ -209,5 +192,3 @@ sections_schema = SectionSchema(many=True)
 
 warning_schema = WarningSchema()
 warnings_schema = WarningSchema(many=True)
-
-

@@ -72,6 +72,13 @@ def sections():
     return render_template("sections.html", title="Abschnitte", sections=sections)
 
 
+@app.route("/warnings")
+@login_required
+def warnings():
+    warnings = Warning.query.all()
+    return render_template("warnings.html", title="Abschnitte", warnings=warnings)
+
+
 @login_required
 @app.route("/section-assignment", methods=["GET", "POST"])
 def section_assignment_1():
@@ -79,7 +86,7 @@ def section_assignment_1():
     form_1.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
     if form_1.validate_on_submit():
         return redirect(url_for("section_assignment_2", railway_id=form_1.railway_id.data))  # redirect to part 2 with chosen railway as param
-    return render_template("section_assignment_1.html", title="Abschnitte zu Strecke zuordnen", form=form_1, legend="Abschnitt zu Strecke zurordnen")
+    return render_template("section_assignment_1.html", title="Abschnitte zu Strecke zuordnen", form=form_1, legend="Abschnitt zu Strecke zuordnen")
 
 
 @login_required
@@ -144,14 +151,14 @@ def new_section():
 # @login_required
 def new_railway():
     form = RailwayForm()
-    form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    #form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    #form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     #form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name})") for s in Section.query.all()]
     if form.validate_on_submit():
         railway = Railway(
             name=form.name.data,
-            starts_at=form.starts_at.data,
-            ends_at=form.ends_at.data,
+            #starts_at=form.starts_at.data,
+            #ends_at=form.ends_at.data,
             #sections=form.sections.data,
         )
         db.session.add(railway)
@@ -166,19 +173,21 @@ def new_railway():
 @login_required
 def new_warning():
     form = WarningForm()
-    form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name})") for s in Section.query.all()]
+    form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name}") for s in Section.query.all()]
     if form.validate_on_submit():
-        for section in form.sections:
-            warning = Warning(
-                title=form.title.data,
-                #description
-            )
-            db.session.add(warning)
-            db.session.commit()
+        warning = Warning(
+            title=form.title.data,
+            description=form.description.data
+        )
+        db.session.add(warning)
+        for section_id in form.sections.data:
+            section = Section.query.get(section_id)
+            section.warnings.append(warning)  # do I have to query warning again or is warning obj the same as the inserted one?
+        db.session.commit()
         flash("Strecke wurde erstellt!", "success")
         return redirect(url_for("home"))
-    return render_template("create_warning.html", title="Neue Strecke erstellen",
-                           form=form, legend="Neue Strecke erstellen")
+    return render_template("create_warning.html", title="Neue Warnung erstellen",
+                           form=form, legend="Neue Warnung erstellen")
 
 
 @app.route("/station/<int:station_id>")
@@ -199,7 +208,7 @@ def section(section_id):
 @login_required
 def railway(railway_id):
     railway = Railway.query.get_or_404(railway_id)
-    return render_template("railway.html", title=f"{railway.starts_at} - {railway.ends_at}", railway=railway)
+    return render_template("railway.html", title=f"{railway.get_start()} - {railway.get_end()}", railway=railway)
 
 
 @app.route("/station/<int:station_id>/update", methods=["GET", "POST"])

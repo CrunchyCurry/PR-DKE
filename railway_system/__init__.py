@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, event
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 
@@ -12,6 +12,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JSON_SORT_KEYS"] = False
 # "sqlite:1_railway_system/resources/railway_system.db"
 db = SQLAlchemy(app)
+event.listen(db.engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on'))
 
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)

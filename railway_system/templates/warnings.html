@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Warnungen</h1>
+    {% for warning in warnings %}
+        <article class="media content-section">
+            <div class="media-body">
+                <i class="bi bi-distribute-horizontal"></i>
+                {% for section in warning.sections %}
+                    {{ section.start_station.name }} - {{ section.end_station.name }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+                <h2><a class="article-title" href="#">{{ warning.title }}</a></h2>
+                <p class="article-content">{{ warning.description }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

@@ -36,6 +36,7 @@
                     <a class="nav-item nav-link" href="{{ url_for('home') }}">Strecken</a>
                     <a class="nav-item nav-link" href="{{ url_for('stations') }}">Bahnhöfe</a>
                     <a class="nav-item nav-link" href="{{ url_for('sections') }}">Abschnitte</a>
+                    <a class="nav-item nav-link" href="{{ url_for('warnings') }}">Warnungen</a>
                     <a class="nav-item nav-link" href="{{ url_for('users') }}">Benutzer</a>
                     {% endif %}
                 </div>
@@ -75,6 +76,7 @@
                 <ul class="list-group">
                     <a class="nav-item nav-link" href="{{ url_for('new_station') }}">Neuer Bahnhof</a>
                     <a class="nav-item nav-link" href="{{ url_for('new_section') }}">Neuer Abschnitt</a>
+                    <a class="nav-item nav-link" href="{{ url_for('new_warning') }}">Neue Warnung</a>
                     <a class="nav-item nav-link" href="{{ url_for('new_railway') }}">Neue Strecke</a>
                     <a class="nav-item nav-link" href="{{ url_for('section_assignment_1') }}">Abschnitte zuordnen</a>
                     <a class="nav-item nav-link" href="{{ url_for('register') }}">Neuer Benutzer</a>
@@ -87,6 +89,7 @@
                 <p class='text-muted'>
                 <ul class="list-group">
                     <a class="nav-item nav-link" href="{{ url_for('new_station') }}">Warnung</a>
+                    <p class="article-content"><i class="bi bi-exclamation-diamond"></i><a href="#"></a></p>
                 </ul>
                 </p>
             </div>

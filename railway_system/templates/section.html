@@ -13,7 +13,7 @@
             </div>
         </div>
         {% endif %}
-        <h2 class="article-title">{{ section.id }}</h2>
+        <h2 class="article-title">[{{ section.id }}] {{ section.start_station.name }} - {{ section.end_station.name }} </h2>
         {% if section.warnings|length > 0 %}
             <p><b>Achtung - für diesen Abschnitt bestehen folgende Warnungen:</b></p>
             {% for warning in section.warnings %}

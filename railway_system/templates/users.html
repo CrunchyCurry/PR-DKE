@@ -4,7 +4,11 @@
     {% for user in users %}
         <article class="media content-section">
             <div class="media-body">
-                <h2><a class="article-title" href="#">{{ user.username }}</a></h2>
+                {% if user.is_admin %}
+                <h3><i class="bi bi-person-badge-fill"></i><a class="article-title" href="{{ url_for('user', user_id=user.id) }}"> {{ user.username + " (Administrator)" }}</a></h3>
+                {% else %}
+                    <h3><i class="bi bi-person-badge"></i><a class="article-title" href="{{ url_for('user', user_id=user.id) }}"> {{ user.username + " (Standard)"}}</a></h3>
+                {% endif %}
             </div>
         </article>
     {% endfor %}

@@ -76,6 +76,12 @@ class Railway(db.Model):
             return self.sections[0].gauge
         return None
 
+    def has_warning(self):
+        for section in self.sections:
+            if len(section.warnings) > 0:
+                return True
+        return False
+
     # TODO continue adding constraints
 
     def __repr__(self):

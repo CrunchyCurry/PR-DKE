@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, DecimalField, IntegerField, RadioField, \
     SelectField, SelectMultipleField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NoneOf, InputRequired
-from .models import User
+from .models import User, Station, Section
 
 
 class RegisterForm(FlaskForm):
@@ -13,7 +13,7 @@ class RegisterForm(FlaskForm):
     #is_admin = SelectField("Rechte", coerce=bool, choices=[(False, "Standard Benutzer"), (True, "Administrator")])
 
     is_admin = BooleanField("Administrator")
-    submit = SubmitField("Benutzer anlegen")
+    submit = SubmitField("Bestätigen")
 
     #TODO ADD THIS INSTEAD OF CHECK CONSTRAINTS
     def validate_username(self, username):
@@ -44,6 +44,12 @@ class StationForm(FlaskForm):
     state = SelectField("Bundesland", choices=STATE_CHOICES, coerce=str, validators=[DataRequired()])
     submit = SubmitField("Bestätigen")
 
+    # check name unique
+    def validate_name(self, name):
+        station = Station.query.filter_by(name=name.data).first()
+        if station:
+            raise ValidationError("Bahnhof Name bereits vergeben. Bitte einen anderen Namen wählen.")
+
 
 GAUGE_CHOICES = [(1435, 'Normalspur (1435mm)'),
                  (1000, 'Schmalspur (1000mm)')]  # 1435mm = Normalspur, 1000mm = Schmalspur
@@ -57,10 +63,16 @@ class SectionForm(FlaskForm):
     #railway_id = SelectField("Strecken-Zuordnung (Optional)", coerce=int)
     submit = SubmitField("Bestätigen")
 
+    # check start != end
     def validate_ends_at(self, field):
         if field.data == self.starts_at.data:
             raise ValidationError("End-Bahnhof kann nicht gleichzeitig auch Start-Bahnhof sein.")
 
+    # check (start, end) unique
+    # def validate_starts_at(self, starts_at):
+    #     section = Section.query.filter_by(starts_at=starts_at.data, ends_at=self.ends_at.data).first()
+    #     if section:
+    #         raise ValidationError("Abschnitt mit demselben Start- und End-Bahnhof existiert bereits.")
 
 class RailwayForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])

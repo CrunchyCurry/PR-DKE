@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>Bahnhöfe</h1>
 <article class="media content-section">
     <div class="media-body">
         <div class="article-metadata">
@@ -11,10 +10,13 @@
                     Löschen
                 </button>
             </div>
-
         </div>
         <h2 class="article-title">{{ station.name }}</h2>
         <p class="article-content">{{ station.state }}</p>
+        <p class="article-content">Verbindungen Richtung:</p>
+        {% for section in station.start_of_s %}
+        <p><i class="bi bi-arrow-bar-right"></i> {{ section.end_station.name }}</p>
+        {% endfor %}
     </div>
 </article>
 <!-- Modal -->

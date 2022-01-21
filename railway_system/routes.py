@@ -1,5 +1,8 @@
 from flask import render_template, url_for, flash, redirect, request, jsonify, session, abort
 from functools import wraps
+
+from sqlalchemy.exc import IntegrityError
+
 from . import app, db, bcrypt
 from .forms import RegisterForm, LoginForm, StationForm, SectionForm, RailwayForm, SectionAssignment1, \
     SectionAssignment2, WarningForm
@@ -20,6 +23,7 @@ def admin_required(f):
 
 
 @app.route("/")
+@app.route("/railways")
 @login_required
 def home():
     railways = Railway.query.all()
@@ -121,7 +125,7 @@ def section_assignment_2(railway_id):
                 gauge=railway.get_gauge()
             ).all()
         ]
-    else: # if railway does not have any sections yet
+    else:  # if railway does not have any sections yet
         form_2.sections.choices = [
             (s.id, f"[{s.id}] {s.start_station.name} - {s.end_station.name} ({s.gauge} mm)") for s in
             Section.query.filter_by(railway_id=None).all()
@@ -170,8 +174,14 @@ def new_section():
             gauge=form.gauge.data,
             # railway_id=form.railway_id.data if form.railway_id.data is not 0 else None
         )
-        db.session.add(section)
-        db.session.commit()
+        try:
+            db.session.add(section)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("Es gibt bereits einen Abschnitt mit demselben Start- und End-Bahnhof.", "warning")
+            return render_template("create_section.html", title="Neuen Abschnitt erstellen",
+                           form=form, lock_stations=False, legend="Neuen Abschnitt erstellen")
         flash("Abschnitt wurde erstellt!", "success")
         return redirect(url_for("sections"))
     return render_template("create_section.html", title="Neuen Abschnitt erstellen",
@@ -224,6 +234,8 @@ def new_warning():
                            form=form, legend="Neue Warnung erstellen")
 
 
+# <---------------------------- SHOW ONE ---------------------------->
+
 @app.route("/station/<int:station_id>")
 @login_required
 def station(station_id):
@@ -252,7 +264,34 @@ def warning(warning_id):
     return render_template("warning.html", title=warning.title, warning=warning)
 
 
+@app.route("/user/<int:user_id>")
+@login_required
+def user(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template("user.html", title=user.username, user=user)
+
+
 # <---------------------------- UPDATE ---------------------------->
+
+@app.route("/user/<int:user_id>/update", methods=["GET", "POST"])
+@login_required
+@admin_required
+def update_user(user_id):
+    user = User.query.get_or_404(user_id)
+    form = RegisterForm()
+    # fill in previous data
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.password = form.password.data
+        db.session.commit()
+        flash("Benutzer wurde bearbeitet!", "success")
+        return redirect(url_for("users", user_id=user.id))
+    elif request.method == "GET":
+        form.username.data = user.username
+        form.password.data = user.password
+    return render_template("register.html", title="Benutzer bearbeiten",
+                           form=form, legend="Benutzer bearbeiten")
+
 
 @app.route("/station/<int:station_id>/update", methods=["GET", "POST"])
 @login_required
@@ -312,6 +351,7 @@ def update_section(section_id):
     form = SectionForm()
     form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
+    lock_stations = False
     # fill in previous data
     if form.validate_on_submit():
         section.starts_at = form.starts_at.data
@@ -325,8 +365,8 @@ def update_section(section_id):
         return redirect(url_for("section", section_id=section.id))
     elif request.method == "GET":
         lock_stations = True if (section.railway_id is not None) else False
-        print(section.railway_id)
-        print(lock_stations)
+        # print(section.railway_id)
+        # print(lock_stations)
         form.starts_at.data = section.starts_at
         form.ends_at.data = section.ends_at
         form.length.data = section.length
@@ -339,6 +379,25 @@ def update_section(section_id):
     # lock stations if sections already belongs to a railway
 
 
+@app.route("/railway/<int:railway_id>/update", methods=["GET", "POST"])
+@login_required
+@admin_required
+def update_railway(railway_id):
+    railway = Railway.query.get_or_404(railway_id)
+    form = RailwayForm()
+    # fill in previous data
+    if form.validate_on_submit():
+        railway.name = form.name.data
+        db.session.commit()
+        flash("Strecke wurde bearbeitet!", "success")
+        return redirect(url_for("railway", railway_id=railway.id))
+    elif request.method == "GET":
+        form.name.data = railway.name
+
+    return render_template("create_railway.html", title="Strecke bearbeiten",
+                           form=form, legend="Strecke bearbeiten")
+
+
 # <---------------------------- DELETE ---------------------------->
 
 @app.route("/station/<int:station_id>/delete", methods=["POST"])
@@ -346,8 +405,13 @@ def update_section(section_id):
 @admin_required
 def delete_station(station_id):
     station = Station.query.get_or_404(station_id)
-    db.session.delete(station)
-    db.session.commit()
+    try:
+        db.session.delete(station)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Bahnhof kann nicht gelöscht werden, wenn dieser noch in Verwendung ist.", "warning")
+        return redirect(url_for("station", station_id=station.id))
     flash("Bahnhof wurde gelöscht!", "success")
     return redirect(url_for("stations"))
 
@@ -355,6 +419,7 @@ def delete_station(station_id):
 @app.route("/warning/<int:warning_id>/delete", methods=["POST"])
 @login_required
 @admin_required
+#TODO on delete cascade for sections affecting warnings
 def delete_warning(warning_id):
     warning = Warning.query.get_or_404(warning_id)
     db.session.delete(warning)
@@ -368,10 +433,42 @@ def delete_warning(warning_id):
 @admin_required
 def delete_section(section_id):
     section = Section.query.get_or_404(section_id)
+    #print(section.railway_id)
+    if section.railway_id is not None:
+        flash("Abschnitt kann nicht gelöscht werden, solange dieser Bestandteil einer Strecke ist.", "warning")
+        return redirect(url_for("section", section_id=section.id))
+    warnings = section.warnings
     db.session.delete(section)
+    for warning in warnings:
+        print(len(warning.sections))
+        if len(warning.sections) == 0:
+            db.session.delete(warning)
+            db.session.commit()
     db.session.commit()
-    flash("Warnung wurde gelöscht!", "success")
+    flash("Abschnitt wurde gelöscht!", "success")
     return redirect(url_for("sections"))
+
+
+@app.route("/railway/<int:railway_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_railway(railway_id):
+    railway = Railway.query.get_or_404(railway_id)
+    db.session.delete(railway)
+    db.session.commit()
+    flash("Strecke wurde gelöscht!", "success")
+    return redirect(url_for("railways"))
+
+
+@app.route("/user/<int:user_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash("Benutzer wurde gelöscht!", "success")
+    return redirect(url_for("users"))
 
 
 

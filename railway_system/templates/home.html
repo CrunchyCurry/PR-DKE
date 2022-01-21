@@ -4,7 +4,13 @@
     {% for railway in railways %}
         <article class="media content-section">
             <div class="media-body">
-                <h2><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}">{{ railway.name }}</a></h2>
+
+                {% if railway.has_warning() %}
+                    <h2><i class="bi bi-exclamation-diamond"></i><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}"> {{ railway.name }}</a></h2>
+                {% else %}
+                    <h2><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}">{{ railway.name }}</a></h2>
+                {% endif %}
+
                 <p class="article-content">{{ railway.get_start() }} - {{ railway.get_end() }}</p>
             </div>
         </article>

@@ -5,13 +5,24 @@
         <div class="article-metadata">
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1"
-                   href="#">Bearbeiten</a>
+                   href="{{ url_for('update_railway', railway_id=railway.id) }}">Bearbeiten</a>
                 <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">
                     Löschen
                 </button>
             </div>
         </div>
+
         <h2 class="article-title">{{ railway.name }}</h2>
+
+        {% for section in railway.sections %}
+            {% if section.warnings|length > 0 %}
+                <p><b>Achtung - für diese Strecke bestehen folgende Warnungen:</b></p>
+                {% for warning in section.warnings %}
+                    <p class="content-section" style="color:red;"> ({{ section.start_station.name }} - {{ section.end_station.name }}) [{{ warning.title }}] {{ warning.description }} </p>
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+
         <p class="article-content">Start: {{ railway.get_start() }}</p>
         <p class="article-content">Ende: {{ railway.get_end() }}</p>
         {% for section in railway.sections %}
@@ -38,14 +49,14 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Bahnhof löschen?</h5>
+                <h5 class="modal-title" id="deleteModalLabel">Strecke löschen?</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
-                <form action="#" method="POST">
+                <form action="{{ url_for('delete_railway', railway_id=railway.id) }}" method="POST">
                     <input class="btn btn-danger" type="submit" value="Löschen">
                 </form>
             </div>

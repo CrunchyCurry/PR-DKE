@@ -22,10 +22,10 @@
         {% endif %}
         <p class="article-content">Start: {{ section.start_station.name }}</p>
         <p class="article-content">Ende: {{ section.end_station.name }}</p>
-        <p class="article-content">Länge: {{ section.length }}</p>
-        <p class="article-content">Nutzungsentgelt: {{ section.user_fee }}</p>
-        <p class="article-content">Maximale Geschwindigkeit: {{ section.max_speed }}</p>
-        <p class="article-content">Spurweite: {{ section.gauge }}</p>
+        <p class="article-content">Länge: {{ section.length|round(2) }} km</p>
+        <p class="article-content">Nutzungsentgelt: {{ section.user_fee|round(2) }} EUR</p>
+        <p class="article-content">Maximale Geschwindigkeit: {{ section.max_speed }} km/h</p>
+        <p class="article-content">Spurweite: {{ section.gauge }} mm</p>
         {% if section.railway_id is not none %}
             <p class="article-content">Zugeteilt: {{ section.on_railway.name }}</p>
         {% else %}

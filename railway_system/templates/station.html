@@ -2,6 +2,7 @@
 {% block content %}
 <article class="media content-section">
     <div class="media-body">
+        {% if current_user.is_authenticated and current_user.check_admin() %}
         <div class="article-metadata">
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1"
@@ -11,12 +12,17 @@
                 </button>
             </div>
         </div>
+        {% endif %}
         <h2 class="article-title">{{ station.name }}</h2>
-        <p class="article-content">{{ station.state }}</p>
-        <p class="article-content">Verbindungen Richtung:</p>
-        {% for section in station.start_of_s %}
-        <p><i class="bi bi-arrow-bar-right"></i> {{ section.end_station.name }}</p>
-        {% endfor %}
+        <p class="article-content"><i class="bi bi-pin-map"></i> {{ station.state }}</p>
+        <p class="article-content"><i class="bi bi-signpost"></i> Verbindungen Richtung:</p>
+        {% if station.start_of_s|length > 0 %}
+            {% for section in station.start_of_s %}
+                <p><i class="bi bi-arrow-bar-right"></i> {{ section.end_station.name }}</p>
+            {% endfor %}
+            {% else %}
+                <p> Keine Verbindungen in Richtung eines Bahnhofs vorhanden. </p>
+        {% endif %}
     </div>
 </article>
 <!-- Modal -->

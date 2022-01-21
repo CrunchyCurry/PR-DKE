@@ -35,8 +35,8 @@ class Station(db.Model):
     #start_of_r = db.relationship('Railway', backref='start_station', lazy='dynamic', foreign_keys='Railway.starts_at')
     #end_of_r = db.relationship('Railway', backref='end_station', lazy='dynamic', foreign_keys='Railway.ends_at')
     # for sections
-    start_of_s = db.relationship('Section', backref='start_station', lazy='dynamic', foreign_keys='Section.starts_at')
-    end_of_s = db.relationship('Section', backref='end_station', lazy='dynamic', foreign_keys='Section.ends_at')
+    start_of_s = db.relationship('Section', backref='start_station', lazy='select', foreign_keys='Section.starts_at')
+    end_of_s = db.relationship('Section', backref='end_station', lazy='select', foreign_keys='Section.ends_at')
 
 
     def __init__(self, name, state):

@@ -6,9 +6,9 @@
             <div class="media-body">
 
                 {% if railway.has_warning() %}
-                    <h2><i class="bi bi-exclamation-diamond"></i><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}"> {{ railway.name }}</a></h2>
+                    <h3><i class="bi bi-exclamation-diamond"></i><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}"> {{ railway.name }}</a></h3>
                 {% else %}
-                    <h2><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}">{{ railway.name }}</a></h2>
+                    <h3><a class="article-title" href="{{ url_for('railway', railway_id=railway.id) }}">{{ railway.name }}</a></h3>
                 {% endif %}
 
                 <p class="article-content">{{ railway.get_start() }} - {{ railway.get_end() }}</p>

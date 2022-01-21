@@ -45,6 +45,10 @@ a.article-title:hover {
   white-space: pre-line;
 }
 
+.article-content-no-break {
+  white-space: nowrap;
+}
+
 .article-img {
   height: 65px;
   width: 65px;

@@ -2,6 +2,7 @@
 {% block content %}
 <article class="media content-section">
     <div class="media-body">
+        {% if current_user.is_authenticated and current_user.check_admin() %}
         <div class="article-metadata">
             <div>
                 <a class="btn btn-secondary btn-sm mt-1 mb-1"
@@ -11,7 +12,7 @@
                 </button>
             </div>
         </div>
-
+        {% endif %}
         <h2 class="article-title">{{ railway.name }}</h2>
 
         {% for section in railway.sections %}

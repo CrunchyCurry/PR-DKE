@@ -457,7 +457,7 @@ def delete_railway(railway_id):
     db.session.delete(railway)
     db.session.commit()
     flash("Strecke wurde gelöscht!", "success")
-    return redirect(url_for("railways"))
+    return redirect(url_for("home"))
 
 
 @app.route("/user/<int:user_id>/delete", methods=["POST"])

@@ -20,6 +20,11 @@
                     {{ form.sections(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
+            <div class="form-group mb-4">
+                <p class="article-content" style="color:grey;">
+                    * Es werden nur kompatible Abschnitte angezeigt, also nur jene, dessen Spurweite und Bahnhof mit dem vorangegangen Abschnitt, falls vorhanden, übereinstimmen.
+                </p>
+            </div>
         <div class="mt-8 form-group">
             {{ form.submit(class="btn btn-outline-info") }}
         </div>

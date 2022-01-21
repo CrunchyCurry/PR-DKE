@@ -4,7 +4,7 @@
     {% for station in stations %}
         <article class="media content-section">
             <div class="media-body">
-                <h2><a class="article-title" href="{{ url_for('station', station_id=station.id) }}">{{ station.name }}</a></h2>
+                <h3><a class="article-title" href="{{ url_for('station', station_id=station.id) }}">{{ station.name }}</a></h3>
                 <p class="article-content">{{ station.state }}</p>
             </div>
         </article>

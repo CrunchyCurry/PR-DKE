@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, DecimalField, IntegerField, RadioField, \
     SelectField, SelectMultipleField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NoneOf, InputRequired
-from .models import User, Station, Section
+from .models import User, Station, Section, Railway
 
 
 class RegisterForm(FlaskForm):
@@ -81,12 +81,11 @@ class RailwayForm(FlaskForm):
     #sections = SelectMultipleField("Zugeordnete Abschnitte (Optional)", coerce=int)  #TODO: check if selected sections already belong to another railway
     submit = SubmitField("Bestätigen")
 
-    def validate_ends_at(self, field):
-        if field.data == self.starts_at.data:
-            raise ValidationError("End-Bahnhof kann nicht gleichzeitig auch Start-Bahnhof sein.")
-
-    #def validate_sections(self, field):
-    #    if len(field.data) > 1 and 0 in field.data:
+    # check name unique
+    def validate_name(self, name):
+        railway = Railway.query.filter_by(name=name.data).first()
+        if railway:
+            raise ValidationError("Strecken Name bereits vergeben. Bitte einen anderen Namen wählen.")
 
 
 class SectionAssignment1(FlaskForm):

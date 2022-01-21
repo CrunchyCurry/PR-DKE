@@ -1,2 +1,7 @@
+(Administrator)
+username: admin
+password: adminadmin
+
+(Standard User)
 username: demo
 password: demodemo

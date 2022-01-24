@@ -18,7 +18,8 @@ In the same terminal, start the application by running:
 flask run
 ```
 
-If needed, a specific port for the app can be assigned by instead running:
+If needed, a specific port for the app can be assigned.
+E.g. in order to run the app on port ```8080```, run:
 
 ```
 flask run --port=8080

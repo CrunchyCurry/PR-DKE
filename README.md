@@ -1,4 +1,4 @@
-# PR-DKE (instructions pending)
+# PR-DKE (instructions pending [install req?])
 
 ## Prerequisite
 

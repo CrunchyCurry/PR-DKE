@@ -15,11 +15,10 @@ class RegisterForm(FlaskForm):
     is_admin = BooleanField("Administrator")
     submit = SubmitField("Bestätigen")
 
-    #TODO ADD THIS INSTEAD OF CHECK CONSTRAINTS
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user:
-            raise ValidationError("Benutzername bereits vergeben. Bitte einen anderen Benutzernamen wählen.")
+    # def validate_username(self, username):
+    #     user = User.query.filter_by(username=username.data).first()
+    #     if user:
+    #         raise ValidationError("Benutzername bereits vergeben. Bitte einen anderen Benutzernamen wählen.")
 
 
 class LoginForm(FlaskForm):
@@ -45,10 +44,10 @@ class StationForm(FlaskForm):
     submit = SubmitField("Bestätigen")
 
     # check name unique
-    def validate_name(self, name):
-        station = Station.query.filter_by(name=name.data).first()
-        if station:
-            raise ValidationError("Bahnhof Name bereits vergeben. Bitte einen anderen Namen wählen.")
+    # def validate_name(self, name):
+    #     station = Station.query.filter_by(name=name.data).first()
+    #     if station:
+    #         raise ValidationError("Bahnhof Name bereits vergeben. Bitte einen anderen Namen wählen.")
 
 
 GAUGE_CHOICES = [(1435, 'Normalspur (1435mm)'),
@@ -60,7 +59,6 @@ class SectionForm(FlaskForm):
     user_fee = DecimalField("Nutzungsentgelt", validators=[DataRequired()])
     max_speed = IntegerField("Maximale Geschwindigkeit", validators=[DataRequired()])
     gauge = RadioField("Spurweite", choices=GAUGE_CHOICES, default='1435', validators=[DataRequired()])
-    #railway_id = SelectField("Strecken-Zuordnung (Optional)", coerce=int)
     submit = SubmitField("Bestätigen")
 
     # check start != end
@@ -82,10 +80,10 @@ class RailwayForm(FlaskForm):
     submit = SubmitField("Bestätigen")
 
     # check name unique
-    def validate_name(self, name):
-        railway = Railway.query.filter_by(name=name.data).first()
-        if railway:
-            raise ValidationError("Strecken Name bereits vergeben. Bitte einen anderen Namen wählen.")
+    # def validate_name(self, name):
+    #     railway = Railway.query.filter_by(name=name.data).first()
+    #     if railway:
+    #         raise ValidationError("Strecken Name bereits vergeben. Bitte einen anderen Namen wählen.")
 
 
 class SectionAssignment1(FlaskForm):
@@ -95,7 +93,12 @@ class SectionAssignment1(FlaskForm):
 
 class SectionAssignment2(FlaskForm):
     sections = SelectField("Abschnitt", coerce=int)  #TODO: check if selected sections already belong to another railway
-    submit = SubmitField("Zuordnen")
+    submit = SubmitField("Bestätigen")
+
+
+# class RemoveAssignment(FlaskForm):
+#     sections = SelectField("Abschnitt", coerce=int)
+#     submit = SubmitField("Zuordnen")
 
 
 class WarningForm(FlaskForm):

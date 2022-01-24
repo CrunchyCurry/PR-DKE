@@ -25,7 +25,13 @@
         <p class="article-content">Länge: {{ section.length|round(2) }} km</p>
         <p class="article-content">Nutzungsentgelt: {{ section.user_fee|round(2) }} EUR</p>
         <p class="article-content">Maximale Geschwindigkeit: {{ section.max_speed }} km/h</p>
-        <p class="article-content">Spurweite: {{ section.gauge }} mm</p>
+
+        {% if section.gauge == 1435 %}
+            <p class="article-content">Spurweite: {{ section.gauge }} mm (NS)</p>
+        {% else %}
+            <p class="article-content">Spurweite: {{ section.gauge }} mm (SS)</p>
+        {% endif %}
+
         {% if section.railway_id is not none %}
             <p class="article-content">Zugeteilt: {{ section.on_railway.name }}</p>
         {% else %}

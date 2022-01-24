@@ -179,7 +179,7 @@ def new_section():
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            flash("Es gibt bereits einen Abschnitt mit demselben Start- und End-Bahnhof.", "warning")
+            flash("Es gibt bereits einen Abschnitt mit dem selben Start- und End-Bahnhof.", "warning")
             return render_template("create_section.html", title="Neuen Abschnitt erstellen",
                            form=form, lock_stations=False, legend="Neuen Abschnitt erstellen")
         flash("Abschnitt wurde erstellt!", "success")

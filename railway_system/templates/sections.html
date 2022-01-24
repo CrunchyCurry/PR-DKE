@@ -11,7 +11,14 @@
                        [{{ section.id }}] {{ section.start_station.name }} - {{ section.end_station.name }}
                     </a>
                 </h4>
-
+                    <div>
+                        {{ section.gauge }} mm /
+                        {% if section.gauge == 1435 %}
+                            Normalspur
+                        {% else %}
+                            Schmalspur
+                        {% endif %}
+                    </div>
             </div>
         </article>
     {% endfor %}

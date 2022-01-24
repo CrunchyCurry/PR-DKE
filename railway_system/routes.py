@@ -141,6 +141,45 @@ def section_assignment_2(railway_id):
                            railway_name=railway_name)
 
 
+@login_required
+@admin_required
+@app.route("/remove-assignment", methods=["GET", "POST"])
+def remove_assignment_1():
+    form_1 = SectionAssignment1()
+    form_1.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
+    if form_1.validate_on_submit():
+        return redirect(url_for("remove_assignment_2",
+                                railway_id=form_1.railway_id.data))
+    return render_template("section_assignment_1.html", title="Abschnitt von Strecke lösen", form=form_1,
+                           legend="Abschnitt von Strecke lösen")
+
+
+@login_required
+@admin_required
+@app.route("/remove-assignment/<int:railway_id>", methods=["GET", "POST"])
+def remove_assignment_2(railway_id):
+    railway = Railway.query.filter_by(id=railway_id).first()
+    railway_name = railway.name
+    form_2 = SectionAssignment2()
+    if railway.get_end_id() is not None:  # if railway already has sections
+        form_2.sections.choices = [
+            (railway.get_end_section().id,
+             f"[{railway.get_end_section().id}] {railway.get_end_section().start_station.name} - {railway.get_end_section().end_station.name}")
+        ]
+    else:  # if railway does not have any sections yet
+        form_2.sections.choices = []
+    if form_2.validate_on_submit():
+        print(railway.sections)
+        removed_section_id = railway.get_end_section().id
+        railway.sections = railway.sections[:-1]
+        db.session.commit()
+        flash(f"Abschnitt {removed_section_id} wurde von Strecke {railway_name} gelöst!", "success")
+        return redirect(url_for("remove_assignment_2", railway_id=railway_id))
+    return render_template("remove_assignment.html", title="Abschnitte von Strecke lösen", form=form_2,
+                           railway_name=railway_name)
+
+
+
 @app.route("/station/new", methods=["GET", "POST"])
 @login_required
 @admin_required
@@ -179,7 +218,7 @@ def new_section():
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            flash("Es gibt bereits einen Abschnitt mit demselben Start- und End-Bahnhof.", "warning")
+            flash("Es gibt bereits einen Abschnitt mit dem selben Start- und End-Bahnhof.", "warning")
             return render_template("create_section.html", title="Neuen Abschnitt erstellen",
                            form=form, lock_stations=False, legend="Neuen Abschnitt erstellen")
         flash("Abschnitt wurde erstellt!", "success")
@@ -193,16 +232,8 @@ def new_section():
 @admin_required
 def new_railway():
     form = RailwayForm()
-    # form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    # form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    # form.sections.choices = [(s.id, f"Id: {s.id} | {s.start_station.name} - {s.end_station.name})") for s in Section.query.all()]
     if form.validate_on_submit():
-        railway = Railway(
-            name=form.name.data,
-            # starts_at=form.starts_at.data,
-            # ends_at=form.ends_at.data,
-            # sections=form.sections.data,
-        )
+        railway = Railway(name=form.name.data)
         db.session.add(railway)
         db.session.commit()
         flash("Strecke wurde erstellt!", "success")
@@ -283,7 +314,14 @@ def update_user(user_id):
     if form.validate_on_submit():
         user.username = form.username.data
         user.password = form.password.data
-        db.session.commit()
+        # if integrity error is raised
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("Es gibt bereits einen Benutzer mit dem selben Benutzernamen.", "warning")
+            return render_template("register.html", title="Benutzer bearbeiten",
+                           form=form, legend="Benutzer bearbeiten")
         flash("Benutzer wurde bearbeitet!", "success")
         return redirect(url_for("users", user_id=user.id))
     elif request.method == "GET":
@@ -303,7 +341,14 @@ def update_station(station_id):
     if form.validate_on_submit():
         station.name = form.name.data
         station.state = form.state.data
-        db.session.commit()
+        # if integrity error is raised
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("Es gibt bereits einen Bahnhof mit dem selben Namen.", "warning")
+            return render_template("create_station.html", title="Bahnhof bearbeiten",
+                           form=form, legend="Bahnhof bearbeiten")
         flash("Bahnhof wurde bearbeitet!", "success")
         return redirect(url_for("station", station_id=station.id))
     elif request.method == "GET":
@@ -325,18 +370,18 @@ def update_warning(warning_id):
     if form.validate_on_submit():
         warning.title = form.title.data
         warning.description = form.description.data
-        #warning.sections = form.sections TODO ??? for now only updating title and desc work
-        db.session.commit()
+        warning.sections = []
+        # form only contains section ids -> query db to find the section object to append to the warning.sections list
+        for section_id in form.sections.data:
+            section = Section.query.get(section_id)
+            warning.sections.append(section)
+        db.session.commit()  # no check for integrity error needed, warning does not have unique attributes
         flash("Warnung wurde bearbeitet!", "success")
         return redirect(url_for("warning", warning_id=warning.id))
     elif request.method == "GET":
-        # form.sections.data = warning.sections
-        print(SectionWarning.query.filter_by(warning_id=warning_id).first().warning_id)
-        # no need to check if sections of warnings is empty, because a warning always has one section
-        previous_sections = []
-        for section in SectionWarning.query.filter_by(warning_id=warning_id).all():
-            previous_sections.append(section.id)
-        form.sections.process_data(previous_sections)  # select previous sections as default
+        form.sections.data = []
+        for section in warning.sections:
+            form.sections.data.append(section.id)
         form.title.data = warning.title
         form.description.data = warning.description
     return render_template("create_warning.html", title="Warnung bearbeiten",
@@ -348,7 +393,8 @@ def update_warning(warning_id):
 @admin_required
 def update_section(section_id):
     section = Section.query.get_or_404(section_id)
-    form = SectionForm()
+    #  uses start and end of section if nothing is chosen (e.g. when locked_stations = True)
+    form = SectionForm(starts_at=section.starts_at, ends_at=section.ends_at)
     form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     lock_stations = False
@@ -360,20 +406,20 @@ def update_section(section_id):
         section.user_fee = form.user_fee.data
         section.max_speed = form.max_speed.data
         section.gauge = form.gauge.data
-        db.session.commit()
+        db.session.commit()  # no integrity check needed, has no unique fields (start=end already handled in form)
         flash("Abschnitt wurde bearbeitet!", "success")
         return redirect(url_for("section", section_id=section.id))
     elif request.method == "GET":
         lock_stations = True if (section.railway_id is not None) else False
-        # print(section.railway_id)
-        # print(lock_stations)
         form.starts_at.data = section.starts_at
+        print(section.starts_at)
         form.ends_at.data = section.ends_at
+        print(section.ends_at)
         form.length.data = section.length
         form.user_fee.data = section.user_fee
         form.max_speed.data = section.max_speed
         form.gauge.data = section.gauge
-
+        print(lock_stations)
     return render_template("create_section.html", title="Abschnitt bearbeiten",
                            form=form, lock_stations=lock_stations, legend="Abschnitt bearbeiten")
     # lock stations if sections already belongs to a railway
@@ -388,7 +434,14 @@ def update_railway(railway_id):
     # fill in previous data
     if form.validate_on_submit():
         railway.name = form.name.data
-        db.session.commit()
+        # if integrity error is raised
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("Es gibt bereits eine Strecke mit dem selben Namen.", "warning")
+            return render_template("create_railway.html", title="Strecke bearbeiten",
+                           form=form, legend="Strecke bearbeiten")
         flash("Strecke wurde bearbeitet!", "success")
         return redirect(url_for("railway", railway_id=railway.id))
     elif request.method == "GET":

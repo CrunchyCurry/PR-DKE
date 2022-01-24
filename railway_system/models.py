@@ -18,7 +18,6 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False)
 
-    #TODO add is admin method
     def check_admin(self):
         return self.is_admin
 
@@ -76,6 +75,11 @@ class Railway(db.Model):
             return self.sections[0].gauge
         return None
 
+    def get_end_section(self):
+        if len(self.sections) != 0:
+            return self.sections[-1]
+        return None
+
     def has_warning(self):
         for section in self.sections:
             if len(section.warnings) > 0:
@@ -111,7 +115,7 @@ class Warning(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(30), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    sections = db.relationship("Section", secondary="section_warning")
+    sections = db.relationship("Section", lazy='select', secondary="section_warning")
     # section_id = db.Column(db.Integer, db.ForeignKey("section.id"), nullable=False)
 
 

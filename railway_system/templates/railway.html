@@ -15,17 +15,24 @@
         {% endif %}
         <h2 class="article-title">{{ railway.name }}</h2>
 
-        {% for section in railway.sections %}
-            {% if section.warnings|length > 0 %}
-                <p><b>Achtung - für diese Strecke bestehen folgende Warnungen:</b></p>
-                {% for warning in section.warnings %}
-                    <p class="content-section" style="color:red;"> ({{ section.start_station.name }} - {{ section.end_station.name }}) [{{ warning.title }}] {{ warning.description }} </p>
-                {% endfor %}
-            {% endif %}
-        {% endfor %}
+        {% if railway.has_warning() %}
+            <p><b>Achtung - für diese Strecke bestehen folgende Warnungen:</b></p>
+            {% for section in railway.sections %}
+                {% if section.warnings|length > 0 %}
+                    {% for warning in section.warnings %}
+                        <p class="content-section" style="color:red;"> ({{ section.start_station.name }} - {{ section.end_station.name }}) [{{ warning.title }}] {{ warning.description }} </p>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
 
-        <p class="article-content">Start: {{ railway.get_start() }}</p>
-        <p class="article-content">Ende: {{ railway.get_end() }}</p>
+        {% if railway.get_start() is not none %}
+            <p class="article-content">Start: {{ railway.get_start() }}</p>
+            <p class="article-content">Ende: {{ railway.get_end() }}</p>
+        {% else %}
+            <div>Für diese Strecke wurden noch keine Abschnitte definiert.</div>
+        {% endif %}
+
         {% for section in railway.sections %}
             {% if loop.first %}
                 <p style="font-size:20px" class="article-content"><b>{{ section.start_station.name }}</b></p>
@@ -37,7 +44,13 @@
             {% else %}
                 {% set displayed_gauge = "[SS]" %}
             {% endif %}
-            <p class="article-content"><i class="bi bi-distribute-horizontal"></i><a href="{{ url_for('section', section_id=section.id) }}"> Abschnitt: {{ section.id }} {{ displayed_gauge }} {{ section.max_speed }} km/h</a></p>
+
+            {% if section.warnings|length != 0 %}
+                <p class="article-content"><i class="bi bi-distribute-horizontal"></i> <i class="bi bi-exclamation-triangle" style="color:red;"> </i><a href="{{ url_for('section', section_id=section.id) }}"> Abschnitt: {{ section.id }} {{ displayed_gauge }} {{ section.max_speed }} km/h | Länge: {{ section.length|round(2)}} km</a></p>
+            {% else %}
+                <p class="article-content"><i class="bi bi-distribute-horizontal"></i><a href="{{ url_for('section', section_id=section.id) }}"> Abschnitt: {{ section.id }} {{ displayed_gauge }} {{ section.max_speed }} km/h | Länge: {{ section.length|round(2)}} km</a></p>
+            {% endif %}
+
             {% if loop.last %}
                 <p style="font-size:20px" class="article-content"><b>{{ section.end_station.name }}</b></p>
             {% endif %}

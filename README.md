@@ -1,23 +1,29 @@
-# PR-DKE (instructions pending [install req?])
+# [PR-DKE] Strecken-Informationssystem SIS
 
 ## Prerequisite
 
-The ```FLASK_APP``` environment variable has to be set to run the application.
+```Python 3.8``` and ```pip``` (usually already bundled with Python) are needed to run this project. Instructions are Linux specific.
 
-1. Open the terminal in the root of the project.
-2. Set the ```FLASK_APP``` environment variable to ```railway_system```. For Linux use:
-```
-export FLASK_APP=railway_system
-```
-You can check if the environment variable has been successfully set by printing it with ```echo $FLASK_APP```.
+Open the terminal and set the root of the project as the working directory or simply open the terminal in the root of the project. 
 
-## Run the project
+Install dependencies by running (preferably using a virtual environment):
+```
+pip install -r requirements.txt
+```
+
+## Run the application
 
 In the same terminal, start the application by running:
 ```
 flask run
 ```
 
-Environment varibles are only valid for that terminal session. 
+If needed, a specific port for the app can be assigned.
+E.g. in order to run the app on port ```8080```, run:
 
-If you want to re-run the application, you do not have to repeat the first two steps as long as you do not close the terminal.
+```
+flask run --port=8080
+```
+
+
+Done!

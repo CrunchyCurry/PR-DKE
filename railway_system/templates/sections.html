@@ -4,8 +4,6 @@
     {% for section in sections %}
         <article class="media content-section">
             <div class="media-body">
-                <!--<h2><a class="article-title" href="{{ url_for('section', section_id=section.id) }}">{{ section.id }}</a><span style="font-size: 25px;">{{ section.start_station.name }} - {{ section.end_station.name }}</span></h2>
-                -->
                 <h4>
                     <a class="article-title" href="{{ url_for('section', section_id=section.id) }}">
                        [{{ section.id }}] {{ section.start_station.name }} - {{ section.end_station.name }}

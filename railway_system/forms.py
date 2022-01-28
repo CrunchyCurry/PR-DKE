@@ -10,15 +10,8 @@ class RegisterForm(FlaskForm):
     password = PasswordField("Passwort", validators=[DataRequired(), Length(min=8, max=16)])
     confirm_password = PasswordField("Passwort wiederholen",
                                      validators=[DataRequired(), Length(min=8, max=16), EqualTo("password")])
-    #is_admin = SelectField("Rechte", coerce=bool, choices=[(False, "Standard Benutzer"), (True, "Administrator")])
-
     is_admin = BooleanField("Administrator")
     submit = SubmitField("Bestätigen")
-
-    # def validate_username(self, username):
-    #     user = User.query.filter_by(username=username.data).first()
-    #     if user:
-    #         raise ValidationError("Benutzername bereits vergeben. Bitte einen anderen Benutzernamen wählen.")
 
 
 class LoginForm(FlaskForm):
@@ -26,6 +19,7 @@ class LoginForm(FlaskForm):
     password = PasswordField("Passwort", validators=[DataRequired()])
     remember = BooleanField("Angemeldet bleiben")
     submit = SubmitField("Einloggen")
+
 
 STATE_CHOICES = [
     ("Oberösterreich", "Oberösterreich"),
@@ -42,12 +36,6 @@ class StationForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     state = SelectField("Bundesland", choices=STATE_CHOICES, coerce=str, validators=[DataRequired()])
     submit = SubmitField("Bestätigen")
-
-    # check name unique
-    # def validate_name(self, name):
-    #     station = Station.query.filter_by(name=name.data).first()
-    #     if station:
-    #         raise ValidationError("Bahnhof Name bereits vergeben. Bitte einen anderen Namen wählen.")
 
 
 GAUGE_CHOICES = [(1435, 'Normalspur (1435mm)'),
@@ -66,24 +54,10 @@ class SectionForm(FlaskForm):
         if field.data == self.starts_at.data:
             raise ValidationError("End-Bahnhof kann nicht gleichzeitig auch Start-Bahnhof sein.")
 
-    # check (start, end) unique
-    # def validate_starts_at(self, starts_at):
-    #     section = Section.query.filter_by(starts_at=starts_at.data, ends_at=self.ends_at.data).first()
-    #     if section:
-    #         raise ValidationError("Abschnitt mit demselben Start- und End-Bahnhof existiert bereits.")
 
 class RailwayForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    #starts_at = SelectField("Start", coerce=int, validators=[DataRequired()])
-    #ends_at = SelectField("Ende", coerce=int, validators=[DataRequired()])
-    #sections = SelectMultipleField("Zugeordnete Abschnitte (Optional)", coerce=int)  #TODO: check if selected sections already belong to another railway
     submit = SubmitField("Bestätigen")
-
-    # check name unique
-    # def validate_name(self, name):
-    #     railway = Railway.query.filter_by(name=name.data).first()
-    #     if railway:
-    #         raise ValidationError("Strecken Name bereits vergeben. Bitte einen anderen Namen wählen.")
 
 
 class SectionAssignment1(FlaskForm):
@@ -94,11 +68,6 @@ class SectionAssignment1(FlaskForm):
 class SectionAssignment2(FlaskForm):
     sections = SelectField("Abschnitt", coerce=int)  #TODO: check if selected sections already belong to another railway
     submit = SubmitField("Bestätigen")
-
-
-# class RemoveAssignment(FlaskForm):
-#     sections = SelectField("Abschnitt", coerce=int)
-#     submit = SubmitField("Zuordnen")
 
 
 class WarningForm(FlaskForm):

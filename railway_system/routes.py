@@ -16,7 +16,6 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.check_admin():
             abort(403)
-            # return redirect(url_for("login"), code=302)
         return f(*args, **kwargs)
 
     return decorated_function
@@ -34,11 +33,8 @@ def home():
 @login_required
 @admin_required
 def register():
-    # if current_user.is_authenticated:
-    #    return redirect(url_for("home"))
     form = RegisterForm()
     if form.validate_on_submit():
-        # hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(username=form.username.data, password=form.password.data, is_admin=form.is_admin.data)
         db.session.add(user)
         db.session.commit()
@@ -202,7 +198,6 @@ def new_section():
     form = SectionForm()
     form.starts_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
     form.ends_at.choices = [("0", "---")] + [(s.id, s.name) for s in Station.query.all()]
-    # form.railway_id.choices = [("0", "---")] + [(s.id, s.name) for s in Railway.query.all()]
     if form.validate_on_submit():
         section = Section(
             starts_at=form.starts_at.data,
@@ -211,7 +206,6 @@ def new_section():
             user_fee=form.user_fee.data,
             max_speed=form.max_speed.data,
             gauge=form.gauge.data,
-            # railway_id=form.railway_id.data if form.railway_id.data is not 0 else None
         )
         try:
             db.session.add(section)
@@ -265,7 +259,7 @@ def new_warning():
                            form=form, legend="Neue Warnung erstellen")
 
 
-# <---------------------------- SHOW ONE ---------------------------->
+# <---------------------------- API GET SPECIFIC ---------------------------->
 
 @app.route("/station/<int:station_id>")
 @login_required
@@ -522,7 +516,6 @@ def delete_user(user_id):
     db.session.commit()
     flash("Benutzer wurde gelöscht!", "success")
     return redirect(url_for("users"))
-
 
 
 # <---------------------------- APIs ---------------------------->

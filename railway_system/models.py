@@ -30,9 +30,6 @@ class Station(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
     state = db.Column(db.String(17), nullable=False)
-    # for railways
-    #start_of_r = db.relationship('Railway', backref='start_station', lazy='dynamic', foreign_keys='Railway.starts_at')
-    #end_of_r = db.relationship('Railway', backref='end_station', lazy='dynamic', foreign_keys='Railway.ends_at')
     # for sections
     start_of_s = db.relationship('Section', backref='start_station', lazy='select', foreign_keys='Section.starts_at')
     end_of_s = db.relationship('Section', backref='end_station', lazy='select', foreign_keys='Section.ends_at')
@@ -51,8 +48,6 @@ class Railway(db.Model):
     __tablename__ = "railway"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
-    #starts_at = #db.Column(db.Integer, db.ForeignKey("station.id"))#, nullable=False)
-    #ends_at = #db.Column(db.Integer, db.ForeignKey("station.id"))#, nullable=False)
     sections = db.relationship("Section", backref='on_railway', lazy='select')
 
     def get_start(self):

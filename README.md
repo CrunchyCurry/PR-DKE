@@ -25,5 +25,38 @@ E.g. in order to run the app on port ```8080```, run:
 flask run --port=8080
 ```
 
-
 Done!
+
+
+## API access
+
+Information about railways, sections, stations and warnings can be requested through API endpoints.
+
+
+> To request information about an item with a specific id:
+```
+/get-{item}/{id}
+```
+
+
+> To request information about all (similar) items:
+```
+/get-{item}s
+```
+ 
+
+<br/>
+
+E.g. in order to request information about the railway with ID 1, use the endpoint:
+
+```
+/get-railway/1
+```
+
+And to request information about all railways, use the endpoint:
+
+```
+/get-railways
+```
+
+
